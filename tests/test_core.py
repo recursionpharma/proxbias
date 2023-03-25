@@ -1,6 +1,6 @@
 import re
 
-import {{cookiecutter.python_name}}.core as sut
+import proxbias.core as sut
 
 
 def test_get_version():
