@@ -25,21 +25,6 @@ dynamic = [
 
 [project.optional-dependencies]
 dev = [
-	"bandit",
-	"black",
-	"coverage",
-	"docstr-coverage",
-	"flake8",
-	"mypy",
-	"pre-commit",
-	"pytest",
-	"pytest-cov",
-	"pyupgrade",
-	"radon",
-	"roadie",
-	"types-pkg_resources",
-	"tox",
-	"validate-pyproject[all]",
 ]
 
 

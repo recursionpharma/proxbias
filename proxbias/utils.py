@@ -2,7 +2,7 @@
 import csv
 import gzip
 from functools import cache
-from typing import Dict, Union
+from typing import Any, Dict, Union
 
 import pandas as pd
 
@@ -22,34 +22,12 @@ def _chrom(chrom_agg):
 
 
 @cache
-def get_chromosome_bands() -> pd.DataFrame:
-    CHROMS = {}
-    CHROM_BANDS = {}
-    CHROM_ARMS = {}
-    with gzip.open("hg38_cytoband.tsv.gz", "rt") as tf:
-        for row in csv.DictReader(tf, delimiter="\t"):
-            if row["#chrom"] not in CHROMS:
-                continue
-            band_name = row["#chrom"] + row["name"]
-            arm_name = row["#chrom"] + row["name"][0]
-            assert arm_name[-1] in "pq"
-            coords = (row["#chrom"], int(row["chromStart"]), int(row["chromEnd"]))
-            CHROM_BANDS[band_name] = coords
-            if arm_name in CHROM_ARMS:
-                start = min(coords[1], CHROM_ARMS[arm_name][1])
-                end = max(coords[2], CHROM_ARMS[arm_name][2])
-                CHROM_ARMS[arm_name] = (coords[0], start, end)
-            else:
-                CHROM_ARMS[arm_name] = coords
-
-
-@cache
 def get_chromosome_information() -> Union[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     # Load chromosome information
 
     chroms = pd.read_csv("data/hg38_scaffolds.tsv", sep="\t", usecols=["chrom", "chromStart", "chromEnd"])
     centros = pd.read_csv("data/centromeres_hg38.tsv", sep="\t", usecols=["chrom", "chromStart", "chromEnd"])
-    bands = pd.read_csv("data/hg38_ctyoband.tsv.gz", sep="\t", usecols=["chrom", "chromStart", "chromEnd"])
+    bands = pd.read_csv("data/hg38_ctyoband.tsv.gz", sep="\t", usecols=["name", "chrom", "chromStart", "chromEnd"])
 
     centros[["chromStart", "chromEnd"]] = centros[["chromStart", "chromEnd"]].astype(int)
     chroms[["chromStart", "chromEnd"]] = chroms[["chromStart", "chromEnd"]].astype(int)
@@ -88,35 +66,44 @@ def get_chromosome_information() -> Union[pd.DataFrame, pd.DataFrame, pd.DataFra
 
 @cache
 def get_chromosome_info_legacy() -> Union[Dict, Dict, Dict, Dict]:
-    # Load reference genome info: genes and coordinates
+    CHROMS: Dict[str, Any] = {}
+    CHROM_BANDS: Dict[str, Any] = {}
+    CHROM_ARMS: Dict[str, Any] = {}
+    GENES: Dict[str, Any] = {}
+
+    def _find_chrom_arm(chrom, pos, chrom_arms):
+        for arm in "pq":
+            _, start, end = chrom_arms[chrom + arm]
+            if pos >= start and pos < end:
+                return chrom + arm
+        else:
+            return None
 
     # Load chromosome information
-    CHROMS = {}
-    with open("hg38_scaffolds.tsv", "rt") as tf:
-        for row in csv.DictReader(tf, delimiter="\t"):
+    with open("hg38_scaffolds.tsv", "rt") as stf:
+        for row in csv.DictReader(stf, delimiter="\t"):
             chrom = row["chrom"]
             if chrom in VALID_CHROMS:
                 CHROMS[chrom] = {"start": int(row["chromStart"]), "end": int(row["chromEnd"])}
     reordered_chroms = {ch: CHROMS[ch] for ch in VALID_CHROMS}
     CHROMS = reordered_chroms
 
-    with open("centromeres_hg38.tsv", "rt") as tf:
-        for row in csv.DictReader(tf, delimiter="\t"):
+    with open("centromeres_hg38.tsv", "rt") as ctf:
+        for row in csv.DictReader(ctf, delimiter="\t"):
             chrom = row["chrom"]
             start, end = (int(row["chromStart"]), int(row["chromEnd"]))
             CHROMS[chrom]["centromere_start"] = min(start, CHROMS[chrom].get("centromere_start", 3e9))
             CHROMS[chrom]["centromere_end"] = max(end, CHROMS[chrom].get("centromere_end", 0))
 
     # Load chromosome cytoband/arm mapping
-    CHROM_BANDS = {}
-    CHROM_ARMS = {}
-    with gzip.open("hg38_cytoband.tsv.gz", "rt") as tf:
-        for row in csv.DictReader(tf, delimiter="\t"):
+    with gzip.open("hg38_cytoband.tsv.gz", "rt") as btf:
+        for row in csv.DictReader(btf, delimiter="\t"):
             if row["#chrom"] not in CHROMS:
                 continue
             band_name = row["#chrom"] + row["name"]
             arm_name = row["#chrom"] + row["name"][0]
-            assert arm_name[-1] in "pq"
+            if arm_name[-1] not in "pq":
+                raise ValueError(("Unexpected chromosome arm name: ", arm_name))
             coords = (row["#chrom"], int(row["chromStart"]), int(row["chromEnd"]))
             CHROM_BANDS[band_name] = coords
             if arm_name in CHROM_ARMS:
@@ -126,19 +113,11 @@ def get_chromosome_info_legacy() -> Union[Dict, Dict, Dict, Dict]:
             else:
                 CHROM_ARMS[arm_name] = coords
 
-    def find_chrom_arm(chrom, pos):
-        for arm in "pq":
-            _, start, end = CHROM_ARMS[chrom + arm]
-            if pos >= start and pos < end:
-                return chrom + arm
-        else:
-            return None
-
     # Load gene information
     flagged_genes = set()
-    GENES = {}
-    with gzip.open("ncbirefseq_hg38.tsv.gz", "rt") as tf:
-        for row in csv.DictReader(tf, delimiter="\t"):
+
+    with gzip.open("ncbirefseq_hg38.tsv.gz", "rt") as gtf:
+        for row in csv.DictReader(gtf, delimiter="\t"):
             gene_name = row["name2"]
             chrom = row["chrom"]
             start = int(row["txStart"])
@@ -146,11 +125,17 @@ def get_chromosome_info_legacy() -> Union[Dict, Dict, Dict, Dict]:
             if gene_name in flagged_genes or chrom not in CHROMS:
                 continue
             if gene_name not in GENES:
-                GENES[gene_name] = {"chrom": chrom, "start": start, "end": end, "arm": find_chrom_arm(chrom, start)}
+                GENES[gene_name] = {
+                    "chrom": chrom,
+                    "start": start,
+                    "end": end,
+                    "arm": _find_chrom_arm(chrom, start, CHROM_ARMS),
+                }
             else:
                 if chrom != GENES[gene_name]["chrom"]:
                     print(
-                        f"Flagged multi-chrom gene {gene_name} previously found at {GENES[gene_name]} now found at {(chrom, start, end)}"
+                        f"Flagged multi-chrom gene {gene_name} previously found at "
+                        f"{GENES[gene_name]} now found at {(chrom, start, end)}"
                     )
                     del GENES[gene_name]
                     flagged_genes.add(gene_name)
