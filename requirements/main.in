@@ -1,0 +1,11 @@
+configome
+jupyterlab<3.6.2
+matplotlib
+metamorph
+objectstore
+pandas
+phenoreader
+seaborn
+scikit-learn
+superloader
+transmogrifier
