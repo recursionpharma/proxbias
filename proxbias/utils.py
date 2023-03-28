@@ -1,33 +1,48 @@
 # Load reference genome info: genes and coordinates
 import csv
+import functools
 import gzip
-from functools import cache
-from typing import Any, Dict, Union
+import os
+from typing import Any, Dict, Tuple
 
 import pandas as pd
 
 VALID_CHROMS = [f"chr{i}" for i in range(1, 23)] + ["chrX", "chrY"]
 
-
-def _chr_to_int(ch):
-    if ch.lower() == "x":
-        return 24
-    if ch.lower() == "y":
-        return 25
-    return int(ch)
+DATA_DIR = os.path.realpath(os.path.join("/", os.path.dirname(__file__), "..", "data"))
 
 
-def _chrom(chrom_agg):
-    return chrom_agg.str.split("chr").str[1].min()
+@functools.cache  # type: ignore[attr-defined]
+def get_chromosome_information() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """
+    Get structured information about the chromosomes that genes lie on as three dataframes:
+        - Genes, including start and end and which chromosome arm they are on
+        - Chromosomes, including the centromere start and end genomic coordinates
+        - Cytogenic bands, including the name and start and end genomic
 
+    Returns
+    -------
+    Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]
+        Genes, chromosomes, cytogenic bands
+    """
 
-@cache
-def get_chromosome_information() -> Union[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    def _chr_to_int(chr):
+        if chr == "x":
+            return 24
+        if chr == "y":
+            return 25
+        return int(chr)
+
+    def _chrom(chrom):
+        return chrom.str.split("chr").str[1].str.lower().map(_chr_to_int)
+
     # Load chromosome information
 
-    chroms = pd.read_csv("data/hg38_scaffolds.tsv", sep="\t", usecols=["chrom", "chromStart", "chromEnd"])
-    centros = pd.read_csv("data/centromeres_hg38.tsv", sep="\t", usecols=["chrom", "chromStart", "chromEnd"])
-    bands = pd.read_csv("data/hg38_ctyoband.tsv.gz", sep="\t", usecols=["name", "chrom", "chromStart", "chromEnd"])
+    chroms = pd.read_csv(DATA_DIR + "/hg38_scaffolds.tsv", sep="\t", usecols=["chrom", "chromStart", "chromEnd"])
+    centros = pd.read_csv(DATA_DIR + "/centromeres_hg38.tsv", sep="\t", usecols=["chrom", "chromStart", "chromEnd"])
+    bands = pd.read_csv(
+        DATA_DIR + "/hg38_cytoband.tsv.gz", sep="\t", usecols=["name", "#chrom", "chromStart", "chromEnd"]
+    )
 
     centros[["chromStart", "chromEnd"]] = centros[["chromStart", "chromEnd"]].astype(int)
     chroms[["chromStart", "chromEnd"]] = chroms[["chromStart", "chromEnd"]].astype(int)
@@ -35,37 +50,55 @@ def get_chromosome_information() -> Union[pd.DataFrame, pd.DataFrame, pd.DataFra
         centromere_start=("chromStart", "min"),
         centromere_end=("chromEnd", "max"),
     )
-    bands = bands.groupby(["chrom", "name"], as_index=False).agg(
-        band_start=("chromStart", "min"),
-        band_end=("chromEnd", "max"),
+    bands = (
+        bands.rename(columns={"#chrom": "chrom"})
+        .groupby(["chrom", "name"], as_index=False)
+        .agg(
+            band_start=("chromStart", "min"),
+            band_end=("chromEnd", "max"),
+        )
     )
+    bands.chrom = _chrom(bands.chrom)
 
     chroms = chroms.loc[chroms.chrom.isin(VALID_CHROMS)].rename(columns={"chromStart": "start", "chromEnd": "end"})
     chroms = chroms.merge(centros, on="chrom", how="left")
-    chroms.chrom = chroms.chrom.str.split("chr").str[1]
-    chroms = chroms.assign(chrom_int=chroms.chrom.apply(_chr_to_int)).sort_values("chrom_int", ascending=True)
+    chroms.chrom = _chrom(chroms.chrom)
+    chroms = chroms.assign(chrom_int=chroms.chrom).sort_values("chrom_int", ascending=True)
 
-    genes = pd.read_csv("data/ncbirefseq_hg38.tsv.gz", sep="\t", usecols=["name2", "chrom", "txStart", "txEnd"]).rename(
-        columns={"name2": "gene"}
-    )
+    genes = pd.read_csv(
+        DATA_DIR + "/ncbirefseq_hg38.tsv.gz", sep="\t", usecols=["name2", "chrom", "txStart", "txEnd"]
+    ).rename(columns={"name2": "gene"})
+
     genes = genes.loc[genes.chrom.isin(VALID_CHROMS)]
+    genes.chrom = _chrom(genes.chrom)
     genes = genes.groupby("gene", as_index=False).agg(
         start=("txStart", "min"),
         end=("txEnd", "max"),
-        chrom=("chrom", _chrom),
+        chrom=("chrom", "min"),
     )
     genes = genes.drop_duplicates(subset="gene").set_index("gene")
-    genes = genes.assign(chrom_int=genes.chrom.apply(_chr_to_int)).sort_values(
-        ["chrom_int", "start", "end"], ascending=True
-    )
+    genes = genes.assign(chrom_int=genes.chrom).sort_values(["chrom_int", "start", "end"], ascending=True)
 
     chrom_centromere = chroms.set_index("chrom_int").centromere_start.to_dict()
     genes = genes.assign(chrom_arm=genes.apply(lambda x: x.start > chrom_centromere[x.chrom_int], axis=1).astype(int))
     return genes, chroms, bands
 
 
-@cache
-def get_chromosome_info_legacy() -> Union[Dict, Dict, Dict, Dict]:
+@functools.cache  # type: ignore[attr-defined]
+def get_chromosome_info_legacy() -> Tuple[Dict, Dict, Dict, Dict]:
+    """
+    Returns chromosome information as a 4-tuple of dictionaries. The first is the genes, the second is the
+    chromosomes, the third are the boundaries for chromosome arms, and the fourth are cytogenic bands.
+
+    Returns
+    -------
+    Tuple[Dict, Dict, Dict, Dict]
+        genes, chromosomes, arms, and cytogenic bands
+    Raises
+    ------
+    ValueError
+        Raised when there is an unexpected chromosome name in the data
+    """
     CHROMS: Dict[str, Any] = {}
     CHROM_BANDS: Dict[str, Any] = {}
     CHROM_ARMS: Dict[str, Any] = {}
@@ -80,7 +113,7 @@ def get_chromosome_info_legacy() -> Union[Dict, Dict, Dict, Dict]:
             return None
 
     # Load chromosome information
-    with open("hg38_scaffolds.tsv", "rt") as stf:
+    with open(DATA_DIR + "/hg38_scaffolds.tsv", "rt") as stf:
         for row in csv.DictReader(stf, delimiter="\t"):
             chrom = row["chrom"]
             if chrom in VALID_CHROMS:
@@ -88,7 +121,7 @@ def get_chromosome_info_legacy() -> Union[Dict, Dict, Dict, Dict]:
     reordered_chroms = {ch: CHROMS[ch] for ch in VALID_CHROMS}
     CHROMS = reordered_chroms
 
-    with open("centromeres_hg38.tsv", "rt") as ctf:
+    with open(DATA_DIR + "/centromeres_hg38.tsv", "rt") as ctf:
         for row in csv.DictReader(ctf, delimiter="\t"):
             chrom = row["chrom"]
             start, end = (int(row["chromStart"]), int(row["chromEnd"]))
@@ -96,7 +129,7 @@ def get_chromosome_info_legacy() -> Union[Dict, Dict, Dict, Dict]:
             CHROMS[chrom]["centromere_end"] = max(end, CHROMS[chrom].get("centromere_end", 0))
 
     # Load chromosome cytoband/arm mapping
-    with gzip.open("hg38_cytoband.tsv.gz", "rt") as btf:
+    with gzip.open(DATA_DIR + "/hg38_cytoband.tsv.gz", "rt") as btf:
         for row in csv.DictReader(btf, delimiter="\t"):
             if row["#chrom"] not in CHROMS:
                 continue
@@ -116,7 +149,7 @@ def get_chromosome_info_legacy() -> Union[Dict, Dict, Dict, Dict]:
     # Load gene information
     flagged_genes = set()
 
-    with gzip.open("ncbirefseq_hg38.tsv.gz", "rt") as gtf:
+    with gzip.open("data/ncbirefseq_hg38.tsv.gz", "rt") as gtf:
         for row in csv.DictReader(gtf, delimiter="\t"):
             gene_name = row["name2"]
             chrom = row["chrom"]
