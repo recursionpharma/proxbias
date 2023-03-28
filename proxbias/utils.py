@@ -33,8 +33,8 @@ def get_chromosome_info_dataframe() -> Tuple[pd.DataFrame, pd.DataFrame, pd.Data
             return 25
         return int(chr)
 
-    def _chrom(chrom):
-        return chrom.str.split("chr").str[1].str.lower().map(_chr_to_int)
+    def _chrom_int(chrom):
+        return chrom.copy().str.split("chr").str[1].str.lower().map(_chr_to_int)
 
     # Load chromosome information
 
@@ -58,26 +58,27 @@ def get_chromosome_info_dataframe() -> Tuple[pd.DataFrame, pd.DataFrame, pd.Data
             band_end=("chromEnd", "max"),
         )
     )
-    bands.chrom = _chrom(bands.chrom)
+    bands.chrom_int = _chrom_int(bands.chrom)
 
     chroms = chroms.loc[chroms.chrom.isin(VALID_CHROMS)].rename(columns={"chromStart": "start", "chromEnd": "end"})
     chroms = chroms.merge(centros, on="chrom", how="left")
-    chroms.chrom = _chrom(chroms.chrom)
-    chroms = chroms.assign(chrom_int=chroms.chrom).sort_values("chrom_int", ascending=True)
+    chroms["chrom_int"] = _chrom_int(chroms.chrom)
+    chroms = chroms.set_index("chrom").sort_values("chrom_int", ascending=True)
 
     genes = pd.read_csv(
         DATA_DIR + "/ncbirefseq_hg38.tsv.gz", sep="\t", usecols=["name2", "chrom", "txStart", "txEnd"]
     ).rename(columns={"name2": "gene"})
 
     genes = genes.loc[genes.chrom.isin(VALID_CHROMS)]
-    genes.chrom = _chrom(genes.chrom)
+    genes["chrom_int"] = _chrom_int(genes.chrom)
     genes = genes.groupby("gene", as_index=False).agg(
         start=("txStart", "min"),
         end=("txEnd", "max"),
-        chrom=("chrom", "min"),
+        chrom_int=("chrom_int", "min"),
+        chrom_count=("chrom", "nunique"),
     )
-    genes = genes.drop_duplicates(subset="gene").set_index("gene")
-    genes = genes.assign(chrom_int=genes.chrom).sort_values(["chrom_int", "start", "end"], ascending=True)
+    genes = genes.loc[genes.chrom_count == 1].set_index("gene")
+    genes = genes.sort_values(["chrom_int", "start", "end"], ascending=True)
 
     chrom_centromere = chroms.set_index("chrom_int").centromere_start.to_dict()
     genes = genes.assign(chrom_arm=genes.apply(lambda x: x.start > chrom_centromere[x.chrom_int], axis=1).astype(int))
