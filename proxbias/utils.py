@@ -13,7 +13,7 @@ DATA_DIR = os.path.realpath(os.path.join("/", os.path.dirname(__file__), "..", "
 
 
 @functools.cache  # type: ignore[attr-defined]
-def get_chromosome_information() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+def get_chromosome_info_dataframe() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     Get structured information about the chromosomes that genes lie on as three dataframes:
         - Genes, including start and end and which chromosome arm they are on
@@ -85,7 +85,7 @@ def get_chromosome_information() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFra
 
 
 @functools.cache  # type: ignore[attr-defined]
-def get_chromosome_info_legacy() -> Tuple[Dict, Dict, Dict, Dict]:
+def get_chromosome_info_dict() -> Tuple[Dict, Dict, Dict, Dict]:
     """
     Returns chromosome information as a 4-tuple of dictionaries. The first is the genes, the second is the
     chromosomes, the third are the boundaries for chromosome arms, and the fourth are cytogenic bands.
