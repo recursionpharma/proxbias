@@ -14,7 +14,7 @@ DATA_DIR = os.path.realpath(os.path.join("/", os.path.dirname(__file__), "..", "
 
 
 @functools.cache  # type: ignore[attr-defined]
-def get_chromosome_info_dataframe() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+def get_chromosome_info_dataframes() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     Get structured information about the chromosomes that genes lie on as three dataframes:
         - Genes, including start and end and which chromosome arm they are on
@@ -37,7 +37,7 @@ def get_chromosome_info_dataframe() -> Tuple[pd.DataFrame, pd.DataFrame, pd.Data
     def _chrom_int(chrom):
         return chrom.copy().str.split("chr").str[1].str.lower().map(_chr_to_int)
 
-    # Load chromosome information
+    # TODO: refactor into more composable functions
 
     chroms = pd.read_csv(DATA_DIR + "/hg38_scaffolds.tsv", sep="\t", usecols=["chrom", "chromStart", "chromEnd"])
     centros = pd.read_csv(DATA_DIR + "/centromeres_hg38.tsv", sep="\t", usecols=["chrom", "chromStart", "chromEnd"])
@@ -93,7 +93,7 @@ def get_chromosome_info_dataframe() -> Tuple[pd.DataFrame, pd.DataFrame, pd.Data
 
 
 @functools.cache  # type: ignore[attr-defined]
-def get_chromosome_info_dict() -> Tuple[Dict, Dict, Dict, Dict]:
+def get_chromosome_info_dicts() -> Tuple[Dict, Dict, Dict, Dict]:
     """
     Returns chromosome information as a 4-tuple of dictionaries. The first is the genes, the second is the
     chromosomes, the third are the boundaries for chromosome arms, and the fourth are cytogenic bands.

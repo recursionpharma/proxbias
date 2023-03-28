@@ -3,20 +3,20 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from proxbias.utils import get_chromosome_info_dataframe, get_chromosome_info_dict
+from proxbias.utils import get_chromosome_info_dataframes, get_chromosome_info_dicts
 
 
 def test_keys_equal():
-    gene_df, chrom_df, band_df = get_chromosome_info_dataframe()
-    gene_dict, chrom_dict, _, band_dict = get_chromosome_info_dict()
+    gene_df, chrom_df, band_df = get_chromosome_info_dataframes()
+    gene_dict, chrom_dict, _, band_dict = get_chromosome_info_dicts()
     assert set(gene_df.index) == set(gene_dict.keys())
     assert set(chrom_df.index) == set(chrom_dict.keys())
     assert len(band_df.index) == len(band_dict.keys())
 
 
 def test_coordinates_equal():
-    gene_df, chrom_df, band_df = get_chromosome_info_dataframe()
-    gene_dict, chrom_dict, _, band_dict = get_chromosome_info_dict()
+    gene_df, chrom_df, band_df = get_chromosome_info_dataframes()
+    gene_dict, chrom_dict, _, band_dict = get_chromosome_info_dicts()
 
     gene_df2 = pd.DataFrame.from_dict(gene_dict).T.sort_index()
     gene_df2[["start", "end"]] = gene_df2[["start", "end"]].astype(np.int64)
