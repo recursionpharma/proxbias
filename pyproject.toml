@@ -20,28 +20,11 @@ classifiers = [
 keywords=["proxbias"]
 requires-python = ">=3.8"
 dynamic = [
-	"version",
-]
-dependencies = [
+	"version"
 ]
 
 [project.optional-dependencies]
 dev = [
-	"bandit",
-	"black",
-	"coverage",
-	"docstr-coverage",
-	"flake8",
-	"mypy",
-	"pre-commit",
-	"pytest",
-	"pytest-cov",
-	"pyupgrade",
-	"radon",
-	"roadie",
-	"types-pkg_resources",
-	"tox",
-	"validate-pyproject[all]",
 ]
 
 
@@ -81,4 +64,4 @@ exclude = "tests"
 
 [tool.black]
 line-length = 120
-target-version = ["py38", "py39", "py310", "py311"]
+target-version = ["py38", "py39", "py310"]
