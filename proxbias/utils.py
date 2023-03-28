@@ -3,6 +3,7 @@ import csv
 import functools
 import gzip
 import os
+import re
 from typing import Any, Dict, Tuple
 
 import pandas as pd
@@ -79,11 +80,15 @@ def get_chromosome_info_dataframe() -> Tuple[pd.DataFrame, pd.DataFrame, pd.Data
         chrom_int=("chrom_int", "min"),
         chrom_count=("chrom", "nunique"),
     )
+    genes = genes.loc[~genes.gene.str.contains("^LOC*", regex=True)]
     genes = genes.loc[genes.chrom_count == 1].drop(columns="chrom_count").set_index("gene")
     genes = genes.sort_values(["chrom_int", "start", "end"], ascending=True)
 
-    chrom_centromere = chroms.set_index("chrom_int").centromere_start.to_dict()
-    genes["chrom_arm_int"] = genes.apply(lambda x: x.end > chrom_centromere[x.chrom_int], axis=1).astype(int)
+    chroms_centromere_mid = chroms.copy().set_index("chrom_int")
+    chrom_centromere_mid = (
+        (chroms_centromere_mid.centromere_start + chroms_centromere_mid.centromere_end) / 2
+    ).to_dict()
+    genes["chrom_arm_int"] = genes.apply(lambda x: x.end > chrom_centromere_mid[x.chrom_int], axis=1).astype(int)
     return genes, chroms, bands
 
 
@@ -158,7 +163,7 @@ def get_chromosome_info_dict() -> Tuple[Dict, Dict, Dict, Dict]:
             chrom = row["chrom"]
             start = int(row["txStart"])
             end = int(row["txEnd"])
-            if gene_name in flagged_genes or chrom not in CHROMS:
+            if gene_name in flagged_genes or chrom not in CHROMS or re.match("^LOC*", gene_name):
                 continue
             if gene_name not in GENES:
                 GENES[gene_name] = {
@@ -177,5 +182,5 @@ def get_chromosome_info_dict() -> Tuple[Dict, Dict, Dict, Dict]:
                     flagged_genes.add(gene_name)
                     continue
                 GENES[gene_name]["start"] = min(start, GENES[gene_name]["start"])
-                GENES[gene_name]["end"] = max(start, GENES[gene_name]["end"])
+                GENES[gene_name]["end"] = max(end, GENES[gene_name]["end"])
     return GENES, CHROMS, CHROM_ARMS, CHROM_BANDS

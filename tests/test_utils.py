@@ -25,21 +25,12 @@ def test_coordinates_equal():
     gene_df["arm"] = gene_df.apply(lambda x: f"{x.chrom}{x.arm}", axis=1)
     gene_df = gene_df[["chrom", "start", "end", "arm"]].sort_index()
 
-    try:
-        pd.testing.assert_frame_equal(
-            gene_df,
-            gene_df2,
-            check_names=False,
-            check_like=True,
-        )
-    except AssertionError:
-        differences1 = gene_df.loc[gene_df["arm"] != gene_df2["arm"]]
-        differences2 = gene_df.loc[gene_df["arm"] != gene_df2["arm"]]
-        if len(differences1) < 10:
-            warnings.warn(
-                f"Gene data differed by {len(differences1)} rows (less than the maximum 10):"
-                f"\n\n{differences1} \n\nvs\n\n{differences2}"
-            )
+    pd.testing.assert_frame_equal(
+        gene_df,
+        gene_df2,
+        check_names=False,
+        check_like=True,
+    )
 
     chrom_df2 = pd.DataFrame.from_dict(chrom_dict).T
     pd.testing.assert_frame_equal(
