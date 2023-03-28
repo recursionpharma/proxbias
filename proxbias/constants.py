@@ -1,5 +1,9 @@
+import os
+from typing import List
+
 # Source of truth:
 # https://docs.google.com/spreadsheets/d/1_ksX-JQ4czJ18XLxYeWJmpXCCLjneNBz06U5imBMXdo/edit#gid=1916322961
+# fmt: off
 RXRX3_GENE_EXCLUSIONS = \
     ['ABCA1', 'ABHD5', 'ACVR2A', 'ADAM10', 'ADAM15', 'ADAR', 'AKIRIN1', 'ANXA1',
      'ANXA6', 'AP1S3', 'APC', 'APOD', 'ARCN1', 'ARF6', 'ARID1A', 'ARID2', 'ASCL2',
@@ -30,7 +34,13 @@ RXRX3_GENE_EXCLUSIONS = \
      'TSPAN14', 'TXK', 'TYRP1', 'UBE2C', 'ULK1', 'UMODL1', 'UNC13A', 'USP20',
      'USP7', 'VWF', 'WNT10B', 'WNT7A', 'XBP1', 'YAP1', 'ZC3H12A', 'ZEB1', 'ZNF107',
      'ZNRF3']
+# fmt: on
 
-OTHER_GENE_EXCLUSIONS = []
+OTHER_GENE_EXCLUSIONS: List[str] = []
 
 GENE_FILTER_LIST = frozenset(RXRX3_GENE_EXCLUSIONS + OTHER_GENE_EXCLUSIONS)
+
+
+VALID_CHROMS = [f"chr{i}" for i in range(1, 23)] + ["chrX", "chrY"]
+
+DATA_DIR = os.path.realpath(os.path.join("/", os.path.dirname(__file__), "..", "data"))
