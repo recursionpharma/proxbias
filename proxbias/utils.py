@@ -6,6 +6,10 @@ import pandas as pd
 from proxbias.constants import DATA_DIR, VALID_CHROMS
 
 
+def _get_data_path(name):
+    return DATA_DIR.joinpath(name)
+
+
 def _chr_to_int(chr):
     if chr == "x":
         return 24
@@ -19,7 +23,7 @@ def _chrom_int(chrom):
 
 
 def _load_centromeres() -> pd.DataFrame:
-    centros = pd.read_csv(DATA_DIR + "/centromeres_hg38.tsv", sep="\t", usecols=["chrom", "chromStart", "chromEnd"])
+    centros = pd.read_csv(_get_data_path("centromeres_hg38.tsv"), sep="\t", usecols=["chrom", "chromStart", "chromEnd"])
     centros[["chromStart", "chromEnd"]] = centros[["chromStart", "chromEnd"]].astype(int)
     centros = centros.groupby("chrom", as_index=False).agg(
         centromere_start=("chromStart", "min"),
@@ -29,7 +33,7 @@ def _load_centromeres() -> pd.DataFrame:
 
 
 def _load_chromosomes(centromeres: Optional[pd.DataFrame] = None) -> pd.DataFrame:
-    chroms = pd.read_csv(DATA_DIR + "/hg38_scaffolds.tsv", sep="\t", usecols=["chrom", "chromStart", "chromEnd"])
+    chroms = pd.read_csv(_get_data_path("hg38_scaffolds.tsv"), sep="\t", usecols=["chrom", "chromStart", "chromEnd"])
     chroms[["chromStart", "chromEnd"]] = chroms[["chromStart", "chromEnd"]].astype(int)
     chroms = chroms.loc[chroms.chrom.isin(VALID_CHROMS)].rename(columns={"chromStart": "start", "chromEnd": "end"})
     chroms["chrom_int"] = _chrom_int(chroms.chrom)
@@ -44,7 +48,7 @@ def _load_chromosomes(centromeres: Optional[pd.DataFrame] = None) -> pd.DataFram
 
 def _load_bands() -> pd.DataFrame:
     bands = pd.read_csv(
-        DATA_DIR + "/hg38_cytoband.tsv.gz", sep="\t", usecols=["name", "#chrom", "chromStart", "chromEnd"]
+        _get_data_path("hg38_cytoband.tsv.gz"), sep="\t", usecols=["name", "#chrom", "chromStart", "chromEnd"]
     )
     bands = bands.rename(columns={"#chrom": "chrom"})
     bands = bands.groupby(["chrom", "name"], as_index=False).agg(
@@ -58,7 +62,7 @@ def _load_bands() -> pd.DataFrame:
 
 def _load_genes(chromosomes: Optional[pd.DataFrame] = None) -> pd.DataFrame:
     genes = pd.read_csv(
-        DATA_DIR + "/ncbirefseq_hg38.tsv.gz", sep="\t", usecols=["name2", "chrom", "txStart", "txEnd"]
+        _get_data_path("ncbirefseq_hg38.tsv.gz"), sep="\t", usecols=["name2", "chrom", "txStart", "txEnd"]
     ).rename(columns={"name2": "gene"})
 
     genes = genes.loc[genes.chrom.isin(VALID_CHROMS)]
