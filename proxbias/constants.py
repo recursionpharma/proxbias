@@ -40,7 +40,7 @@ OTHER_GENE_EXCLUSIONS: List[str] = []
 
 GENE_FILTER_LIST = frozenset(RXRX3_GENE_EXCLUSIONS + OTHER_GENE_EXCLUSIONS)
 
-ACROCENTRIC_CHROMS = ["chr13", "chr14", "chr15", "chr21", "chr22", "chrY"]
+ACROCENTRIC_CHROMS = {"chr13": 13, "chr14": 14, "chr15": 15, "chr21": 21, "chr22": 22, "chrY":25}
 
 VALID_CHROMS = [f"chr{i}" for i in range(1, 23)] + ["chrX", "chrY"]
 
