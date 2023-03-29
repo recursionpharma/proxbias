@@ -6,7 +6,9 @@ numpy
 objectstore
 pandas
 phenoreader
+scipy
 scikit-learn
+statsmodels
 seaborn
 superloader
 transmogrifier
