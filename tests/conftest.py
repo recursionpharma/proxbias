@@ -5,7 +5,8 @@ from typing import Any, Dict, Tuple
 
 import pytest
 
-from proxbias.constants import DATA_DIR, VALID_CHROMS
+from proxbias.constants import VALID_CHROMS
+from proxbias.utils import _get_data_path
 
 
 @pytest.fixture
@@ -36,7 +37,7 @@ def legacy_chromosome_info_dicts() -> Tuple[Dict, Dict, Dict, Dict]:
             return None
 
     # Load chromosome information
-    with open(DATA_DIR + "/hg38_scaffolds.tsv", "rt") as stf:
+    with open(_get_data_path("hg38_scaffolds.tsv"), "rt") as stf:
         for row in csv.DictReader(stf, delimiter="\t"):
             chrom = row["chrom"]
             if chrom in VALID_CHROMS:
@@ -44,7 +45,7 @@ def legacy_chromosome_info_dicts() -> Tuple[Dict, Dict, Dict, Dict]:
     reordered_chroms = {ch: CHROMS[ch] for ch in VALID_CHROMS}
     CHROMS = reordered_chroms
 
-    with open(DATA_DIR + "/centromeres_hg38.tsv", "rt") as ctf:
+    with open(_get_data_path("centromeres_hg38.tsv"), "rt") as ctf:
         for row in csv.DictReader(ctf, delimiter="\t"):
             chrom = row["chrom"]
             start, end = (int(row["chromStart"]), int(row["chromEnd"]))
@@ -52,7 +53,7 @@ def legacy_chromosome_info_dicts() -> Tuple[Dict, Dict, Dict, Dict]:
             CHROMS[chrom]["centromere_end"] = max(end, CHROMS[chrom].get("centromere_end", 0))
 
     # Load chromosome cytoband/arm mapping
-    with gzip.open(DATA_DIR + "/hg38_cytoband.tsv.gz", "rt") as btf:
+    with gzip.open(_get_data_path("hg38_cytoband.tsv.gz"), "rt") as btf:
         for row in csv.DictReader(btf, delimiter="\t"):
             if row["#chrom"] not in CHROMS:
                 continue
@@ -72,7 +73,7 @@ def legacy_chromosome_info_dicts() -> Tuple[Dict, Dict, Dict, Dict]:
     # Load gene information
     flagged_genes = set()
 
-    with gzip.open("data/ncbirefseq_hg38.tsv.gz", "rt") as gtf:
+    with gzip.open(_get_data_path("ncbirefseq_hg38.tsv.gz"), "rt") as gtf:
         for row in csv.DictReader(gtf, delimiter="\t"):
             gene_name = row["name2"]
             chrom = row["chrom"]

@@ -1,4 +1,4 @@
-import os
+from importlib import resources
 from typing import List
 
 # Source of truth:
@@ -43,4 +43,4 @@ GENE_FILTER_LIST = frozenset(RXRX3_GENE_EXCLUSIONS + OTHER_GENE_EXCLUSIONS)
 
 VALID_CHROMS = [f"chr{i}" for i in range(1, 23)] + ["chrX", "chrY"]
 
-DATA_DIR = os.path.realpath(os.path.join("/", os.path.dirname(__file__), "..", "data"))
+DATA_DIR = resources.files("proxbias").joinpath("data")
