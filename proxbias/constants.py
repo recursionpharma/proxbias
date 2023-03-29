@@ -43,4 +43,4 @@ GENE_FILTER_LIST = frozenset(RXRX3_GENE_EXCLUSIONS + OTHER_GENE_EXCLUSIONS)
 
 VALID_CHROMS = [f"chr{i}" for i in range(1, 23)] + ["chrX", "chrY"]
 
-DATA_DIR = resources.files("proxbias").joinpath("data")
+DATA_DIR = resources.files("proxbias").joinpath("data")  # type:ignore[attr-defined]
