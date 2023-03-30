@@ -27,6 +27,8 @@ artex-client==4.2.13
     # via
     #   image-utils
     #   superloader
+asn1crypto==1.5.1
+    # via scramp
 asttokens==2.2.1
     # via stack-data
 async-timeout==4.0.2
@@ -464,6 +466,8 @@ patsy==0.5.3
     # via statsmodels
 pexpect==4.8.0
     # via ipython
+pg8000==1.29.4
+    # via -r requirements/main.in
 phenomap==0.6.14
     # via phenoreader
 phenoreader==0.34.3
@@ -561,6 +565,7 @@ python-dateutil==2.8.2
     #   jupyter-client
     #   matplotlib
     #   pandas
+    #   pg8000
 python-json-logger==2.0.7
     # via jupyter-events
 pytz==2023.2
@@ -635,6 +640,8 @@ scipy==1.9.1
     #   scikit-image
     #   scikit-learn
     #   statsmodels
+scramp==1.4.4
+    # via pg8000
 seaborn==0.12.2
     # via -r requirements/main.in
 semver==2.13.0
