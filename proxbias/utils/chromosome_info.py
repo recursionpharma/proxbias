@@ -90,6 +90,7 @@ def _load_genes(chromosomes: Optional[pd.DataFrame] = None) -> pd.DataFrame:
 
         # NOTE: Assumes that p is the first chromosome
         genes["chrom_arm"] = genes["chrom_arm_int"].apply(lambda x: "p" if x == 0 else "q")
+        genes["chrom_arm_name"] = genes["chrom"] + genes["chrom_arm"]
     return genes
 
 
