@@ -29,7 +29,7 @@ def _monte_carlo_brunner_munzel(
 
     if combined:
         combined_prob = np.mean(probability_a_greater)
-        combined_pvalue = combine_pvalues(pvalues, method="fisher")
+        _, combined_pvalue = combine_pvalues(pvalues, method="fisher")
         return combined_prob, combined_pvalue
     return np.array(probability_a_greater), np.array(pvalues)
 
@@ -151,7 +151,7 @@ def genome_proximity_bias_score(
 #     seed: int = 42,
 #     return_samples: bool = True,
 #     combined: bool = True,
-# ) -> Dict[str, Any]:
+# ):
 #     cossims, gene_info, genes_by_arm = _prep_data(gene_df)
 #     num_arms = len(gene_info["chrom_arm_name"].unique())
 #     num_genes = len(cossims)
@@ -171,9 +171,11 @@ def genome_proximity_bias_score(
 #         gene_info,
 #         genes_by_arm,
 #     )
-
-#     prob_intra_greater, pvalue, intra_samples, inter_samples = _monte_carlo_brunner_munzel(
+#     prob_intra_greater, pvalue = _monte_carlo_brunner_munzel(
 #         intra_arm_samples,
 #         inter_arm_samples,
 #         combined=combined,
 #     )
+#     if return_samples:
+#         return prob_intra_greater, pvalue, intra_arm_samples, inter_arm_samples
+#     return prob_intra_greater, pvalue
