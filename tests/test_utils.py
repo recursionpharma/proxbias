@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from proxbias.utils import get_chromosome_info_as_dfs, get_chromosome_info_as_dicts
+from proxbias.utils.chromosome_info import get_chromosome_info_as_dfs, get_chromosome_info_as_dicts
 
 
 def test_keys_equal(legacy_chromosome_info_dicts):
