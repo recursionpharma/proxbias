@@ -14,7 +14,7 @@ def _monte_carlo_brunner_munzel(
     population_a_samples: npt.NDArray,
     population_b_samples: npt.NDArray,
     combined: bool = True,
-) -> Union[Tuple[npt.NDArray, npt.NDArray], Tuple[np.float32, np.float32],]:
+) -> Union[Tuple[npt.NDArray, npt.NDArray], Tuple[np.float32, np.float32]]:
     n_trials = population_a_samples.shape[0]
     probability_a_greater = []
     pvalues = []
@@ -36,7 +36,7 @@ def _monte_carlo_brunner_munzel(
 
 def _prep_data(
     gene_df: pd.DataFrame, min_samples_in_arm: Optional[int] = None
-) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+) -> Tuple[Union[pd.DataFrame, pd.Series], pd.DataFrame, pd.DataFrame]:
     gene_df = gene_df.copy()
     gene_info, _, _ = get_chromosome_info_as_dfs()
     seen_genes = gene_info.loc[gene_info.index.intersection(gene_df.index)]
