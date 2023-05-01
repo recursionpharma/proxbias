@@ -141,5 +141,5 @@ def get_chromosome_info_as_dicts(legacy_bands: bool = False) -> Tuple[Dict[str, 
         band_df = band_df[["region", "chrom", "band_start", "band_end"]].set_index("region")
         band_dict = {k: tuple(v) for k, v in band_df.iterrows()}
     else:
-        band_dict = band_df.to_dict(orient="index")
+        band_dict = band_df.to_dict(orient="index")  # type: ignore
     return gene_dict, chrom_dict, band_dict
