@@ -3,7 +3,7 @@ from typing import Any, Dict, Optional, Tuple
 
 import pandas as pd
 
-from proxbias.constants import DATA_DIR, VALID_CHROMS
+from proxbias.utils.constants import DATA_DIR, VALID_CHROMS
 
 
 def _get_data_path(name):

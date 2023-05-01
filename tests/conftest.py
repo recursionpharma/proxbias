@@ -5,8 +5,8 @@ from typing import Any, Dict, Tuple
 
 import pytest
 
-from proxbias.constants import VALID_CHROMS
 from proxbias.utils.chromosome_info import _get_data_path
+from proxbias.utils.constants import VALID_CHROMS
 
 
 @pytest.fixture
