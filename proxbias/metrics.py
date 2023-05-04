@@ -8,6 +8,7 @@ from statsmodels.stats.nonparametric import rank_compare_2indep
 
 from proxbias.utils.chromosome_info import get_chromosome_info_as_dfs
 from proxbias.utils.cosine_similarity import cosine_similarity
+from proxbias.utils.constants import ARMS_ORD
 
 
 def _monte_carlo_brunner_munzel(
