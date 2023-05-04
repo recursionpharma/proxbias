@@ -1,5 +1,11 @@
 import numpy as np
 import pandas as pd
+import scipy as sp
+from typing import Tuple
+from sklearn.utils import Bunch
+import scipy.cluster.hierarchy as scipy_hierarchy
+import scipy.spatial.distance as scipy_distance
+
 
 def harmonize_data(
     data1: Bunch,
@@ -84,7 +90,7 @@ def make_pairwise_cos(
     - convert = bool. Whether to convert the results to a smaller data type
     - dtype = type. Data type to convert to
     """
-    mat = (1-scipy.spatial.distance.cdist(df.values, df.values, metric='cosine')).clip(-1, 1)
+    mat = (1-sp.spatial.distance.cdist(df.values, df.values, metric='cosine')).clip(-1, 1)
     if convert:
         mat = mat.astype(dtype)
     return pd.DataFrame(mat, index=df.index, columns=df.index)
