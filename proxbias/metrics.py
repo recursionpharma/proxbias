@@ -142,3 +142,54 @@ def genome_proximity_bias_score(
     if return_samples:
         return prob_intra_greater, pvalue, intra_arm_samples, inter_arm_samples
     return prob_intra_greater, pvalue
+
+def bm_metrics(
+    df: pd.DataFrame,
+    arms_ord: list=ARMS_ORD
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Calculate Brunner-Munzel statistics for the whole genome and each chromosome arm
+
+    Inputs:
+    -------
+    - df: square dataframe with full-genome cosine similarities and matching index and columns.
+          Index/columns should contain `chromosome_arm` 
+    - arms_ord: list or chromosome arm names in order. These should match names in the index/columns of df
+
+    Outputs:
+    --------
+    - bm_all_df: dataframe of statistics for the whole genome tests
+    - bm_per_arm_df: dataframe of statistics for each chromosome arm
+    """
+    bm_per_arm = {}
+    all_within = []
+    all_between = []
+
+    for arm in arms_ord:
+        arm_df = df.query(f'chromosome_arm=="{arm}"')
+        ind = np.array([x in arm_df.index for x in arm_df.columns])
+        within = arm_df.values[:,ind][np.triu_indices(arm_df.shape[0], 1)]
+        all_within.append(within)
+        between = arm_df.values[:,~ind].flatten()
+        all_between.append(between)
+        # print(arm, within.shape, between.shape)
+        if len(within) > 20 and len(between) > 20:
+            bm_result = rank_compare_2indep(within, between, use_t=False)
+            stat = bm_result.prob1
+            pval = bm_result.test_prob_superior(alternative='larger').pvalue
+            bm_per_arm[arm] = (stat, pval, len(within), len(between))
+    
+    bm_per_arm_df = pd.DataFrame(bm_per_arm).T
+    bm_per_arm_df.columns = ['stat', 'pval', 'n_within', 'n_between']
+    bm_per_arm_df = bm_per_arm_df.assign(bonf_p = bm_per_arm_df.pval*bm_per_arm_df.shape[0])
+
+    all_w = np.concatenate(all_within)
+    all_b = np.concatenate(all_between)
+    bm_result = rank_compare_2indep(all_w, all_b, use_t=False)
+    bm_all = {'stat': bm_result.prob1, 
+              'pval': bm_result.test_prob_superior(alternative='larger').pvalue,
+              'n_within': len(all_w),
+              'n_between': len(all_b)}
+    bm_all_df = pd.DataFrame(bm_all, index=['all'])
+
+    return bm_all_df, bm_per_arm_df

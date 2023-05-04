@@ -1,22 +1,45 @@
 import numpy as np
 import pandas as pd
 
-def harmonize_data(data1, data2, kind='intersection') -> Tuple[pd.DataFrame, pd.DataFrame]:
+def harmonize_data(
+    data1: Bunch,
+    data2: Bunch,
+    cols: list = ['display_label', 'chromosome', 'chromosome_arm', 'chr_idx', 'gene_bp'],
+    kind: str ='intersection',
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
-    Make dataframes with index of `[gene, chrom, chrom_arm, start_coord]` and features as values. 
+    Make dataframes with index of `cols` and features as values. 
     Genes present in either dataset should be present in both with NA feature values if they were not 
     originally present
-    """
-    g1 = data1.metadata.display_label.unique()
-    g2 = data2.metadata.display_label.unique()
 
-    cols = ['display_label', 'chromosome', 'chromosome_arm', 'chr_idx', 'gene_bp']
+    Inputs:
+    -------
+    - data1 = Bunch object with `metadata` pd.DataFrame and `features` pd.DataFrame. 
+              `metadata` must contain `cols` that will be used as the index for the resulting pd.DataFrame
+              `metadata` and `features` must have matching indices.
+    - data2 = Bunch object with `metadata` pd.DataFrame and `features` pd.DataFrame. 
+              `metadata must contain `cols` that will be used as the index for the resulting pd.DataFrame
+    - cols = List of column names from the `metadata` in `data1` and `data2`.
+             The first value should be the name of the column containing gene identifiers.
+    - kind = 'intersection' or 'union'. Whether to return dataframes containing rows present only both 
+             or either of the input bunches
+    """
+
+    for x in ['metadata', 'features']:
+        assert x in data1, f'data1 must contain {x}'
+        assert x in data2, f'data2 must contain {x}'
+    for x in cols:
+        assert x in data1.metadata.columns, f'{x} is not in data1.metadata'
+        assert x in data2.metadata.columns, f'{x} is not in data2.metadata' 
+    assert kind in ('union', 'intersection'), 'Kind should be "union" or "intersection"'
+
+    g1 = data1.metadata[cols[0]].unique()
+    g2 = data2.metadata[cols[0]].unique()
+
     d1 = data1.features.copy()
     d2 = data2.features.copy()
     d1 = d1.set_index(pd.MultiIndex.from_frame(data1.metadata.loc[:,cols]))
     d2 = d2.set_index(pd.MultiIndex.from_frame(data2.metadata.loc[:,cols]))
-
-    assert kind in ('union', 'intersection'), 'Kind should be "union" or "intersection"'
 
     if kind == 'union':
         all_genes = np.union1d(g1, g2)
@@ -46,13 +69,30 @@ def harmonize_data(data1, data2, kind='intersection') -> Tuple[pd.DataFrame, pd.
     d2 = d2.sort_values(['chr_idx', 'gene_bp', 'display_label'])
     return d1, d2
 
-def make_pairwise(df, convert=True, dtype=np.float16) -> pd.DataFrame:
+def make_pairwise_cos(
+    df: pd.DataFrame,
+    convert: bool = True,
+    dtype: type = np.float16,
+) -> pd.DataFrame:
+    """
+    Converts a dataframe of samples X features into a square dataframe of samples X samples 
+    of cosine similarities between rows. 
+
+    Inputs
+    ------
+    - df = pd.DataFrame
+    - convert = bool. Whether to convert the results to a smaller data type
+    - dtype = type. Data type to convert to
+    """
     mat = (1-scipy.spatial.distance.cdist(df.values, df.values, metric='cosine')).clip(-1, 1)
     if convert:
         mat = mat.astype(dtype)
     return pd.DataFrame(mat, index=df.index, columns=df.index)
 
-def make_split_cosmat(d1_cos, d2_cos) -> pd.DataFrame:
+def make_split_cosmat(
+    d1_cos: pd.DataFrame, 
+    d2_cos: pd.DataFrame,
+) -> pd.DataFrame:
     """
     Makes an array of cosine similarities where above the diagonal comes from the first
     data frame and below comes from the second. 
@@ -74,3 +114,53 @@ def make_split_cosmat(d1_cos, d2_cos) -> pd.DataFrame:
     split_mat[ind_l] = d2_cos.values[ind_l]
 
     return pd.DataFrame(split_mat, index=d1_cos.index, columns=d1_cos.columns)
+
+def mk_gene_mats(
+    genes: list,
+    split_df: pd.DataFrame, 
+    df1: pd.DataFrame, 
+    df2: pd.DataFrame,
+) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """
+    Subset square cosim dataframes to `gene` and cluster them by one dataset or the other
+
+    Inputs:
+    -------
+    - genes: list of genes to select
+    - split_mat: square dataframe with cosims for one dataset above the diagonal and the other below the diag
+    - df1: dataframe with cosims for the first datset (above diag in `split_df`)
+    - df2: dataframe with cosims for the second datset (below diag in `split_df`)
+
+    Returns:
+    --------
+    - df: split dataframe selected to the desired genes (not clustered)
+    - df1_sub: df1 selected to the desired genes (not clustered)
+    - df2_sub: df2 selected to the desired genes (not clustered)
+    - clust_df1: split dataframe selected to the desired genes and clustered by df1
+    - clust_df2: split dataframe selected to the desired genes and clustered by df2
+    """
+    ind = [x in genes for x in split_df.index.get_level_values('display_label')]
+    df = split_df.loc[ind, ind]
+
+    ind = [x in genes for x in df1.index.get_level_values('display_label')]
+    df1_sub = df1.loc[ind, ind]
+
+    ind = [x in genes for x in df2.index.get_level_values('display_label')]
+    df2_sub = df2.loc[ind, ind]
+
+    try:
+        idx = scipy_hierarchy.dendrogram(scipy_hierarchy.linkage(scipy_distance.pdist(df1_sub)), no_plot=True)["ivl"]
+        idx = [int(i) for i in idx]
+        clust_df1 = make_split_cosmat(df1_sub.iloc[idx, idx], df2_sub.iloc[idx, idx])
+    except:
+        print("Missing values in df1, couldnt cluster")
+        clust_df1 = make_split_cosmat(df1_sub, df2_sub)
+    try:
+        idx = scipy_hierarchy.dendrogram(scipy_hierarchy.linkage(scipy_distance.pdist(df2_sub)), no_plot=True)["ivl"]
+        idx = [int(i) for i in idx]
+        clust_df2 = make_split_cosmat(df1_sub.iloc[idx, idx], df2_sub.iloc[idx, idx])
+    except:
+        clust_df2 = make_split_cosmat(df1_sub, df2_sub)
+        print("Missing values in df2, couldnt cluster")
+
+    return df, df1_sub, df2_sub, clust_df1, clust_df2
