@@ -36,13 +36,11 @@ def plot_bm_arm_bars(
         df.stat.plot(kind='bar', color=bar_colors)
         bar_ax = plt.gca()
         fig = plt.gcf()
-        # bar_ax.set_title('Per-chromosome-arm proximity bias')
         bar_ax.set_ylabel('P(intra-arm cos > inter)')
         bar_ax.set_xticklabels([xtl.get_text().replace('chr', '') for xtl in bar_ax.get_xticklabels()]);
         bar_ax.set_xticklabels(bar_ax.get_xticklabels(), rotation=0)
         bar_ax.set_ylim((0.4, 1))
         plt.plot(plt.gca().get_xlim(), [.5,.5], ':', c='k')
-        #bar_ax.get_legend().remove()
         if legend:
             bar_ax.legend(handles=[patch1, patch2, patch3, patch4], loc=(1.01, 0.3))
         for tick in bar_ax.xaxis.get_major_ticks()[1::2]:
@@ -84,7 +82,6 @@ def plot_bm_bar_pairs(
     with sns.axes_style("white"), sns.plotting_context("notebook", font_scale=2):
         pal = [palette[i * 2], palette[i * 2 + 1]]
         barplot = sns.barplot(data=df, x=x, y=y, hue=hue, palette = pal, ax=ax);
-        #barplot.set_title(dataset.replace(' v22q4', ''), x=0.45)
         barplot.axhline(0.5, linestyle='--', color='grey');
         barplot.set_xticklabels([xtl.get_text().replace('chr', '') for xtl in barplot.get_xticklabels()]);
         barplot.set_xticklabels(barplot.get_xticklabels(), rotation=0)

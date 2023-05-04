@@ -22,7 +22,7 @@ def cosine_similarity(
     cos = sk_cosine_sim(a.values, b.values)
     cossim_matrix = pd.DataFrame(cos, index=index, columns=columns)
     if triu:
-        cos[np.tril_indices_from(cos, 1)] = np.NaN
+        cos[np.tril_indices_from(cos, 0)] = np.NaN
     if as_long:
         cossim_series = pd.Series(cossim_matrix.values.flatten(), index=pd.MultiIndex.from_product([index, columns]))
         if triu:
