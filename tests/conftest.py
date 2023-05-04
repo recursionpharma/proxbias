@@ -5,7 +5,7 @@ from typing import Any, Dict, Tuple
 
 import pytest
 
-from proxbias.utils.chromosome_info import _get_data_path
+from proxbias.utils.data_utils import _get_data_path
 from proxbias.utils.constants import VALID_CHROMS
 
 

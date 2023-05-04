@@ -3,11 +3,8 @@ from typing import Any, Dict, Optional, Tuple
 
 import pandas as pd
 
-from proxbias.utils.constants import DATA_DIR, VALID_CHROMS
-
-
-def _get_data_path(name):
-    return DATA_DIR.joinpath(name)
+from proxbias.utils.constants import VALID_CHROMS
+from proxbias.utils.data_utils import _get_data_path
 
 
 def _chr_to_int(chr):
