@@ -32,11 +32,11 @@ def harmonize_data(
     """
 
     for x in ['metadata', 'features']:
-        assert x in data1, f'data1 must contain {x}'
-        assert x in data2, f'data2 must contain {x}'
+        if x not in data1: raise KeyError(f'data1 must contain {x}')
+        if x not in data2: raise KeyError(f'data2 must contain {x}')
     for x in cols:
-        assert x in data1.metadata.columns, f'{x} is not in data1.metadata'
-        assert x in data2.metadata.columns, f'{x} is not in data2.metadata' 
+        if x not in data1.metadata.columns: raise KeyError(f'{x} is not in data1.metadata')
+        if x not in data2.metadata.columns: raise KeyError(f'{x} is not in data2.metadata')
     assert kind in ('union', 'intersection'), 'Kind should be "union" or "intersection"'
 
     g1 = data1.metadata[cols[0]].unique()
