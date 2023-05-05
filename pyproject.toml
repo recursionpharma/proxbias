@@ -1,10 +1,9 @@
 [build-system]
-requires = [
-    "setuptools",
-    "wheel",
-    "roadie",
-]
+requires = ["setuptools", "setuptools-scm", "wheel", "toml"]
 build-backend = "setuptools.build_meta"
+
+[tool.distutils.bdist_wheel]
+universal = "true"
 
 [project]
 name = "proxbias"
@@ -23,13 +22,32 @@ dynamic = [
 	"version"
 ]
 
-[project.optional-dependencies]
-dev = [
+dependencies = [
+	"pandas",
+	"scipy",
+	"scikit-learn",
+	"statsmodels",
+	"seaborn",
 ]
 
-
-[tool.distutils.bdist_wheel]
-universal = true
+[project.optional-dependencies]
+dev = [
+	"bandit",
+	"black",
+	"coverage",
+	"docstr-coverage",
+	"flake8",
+	"mypy",
+	"pip-tools",
+	"pre-commit",
+	"pytest",
+	"pytest-cov",
+	"pyupgrade",
+	"radon",
+	"types-pkg_resources",
+	"tox",
+	"validate-pyproject[all]",
+]
 
 [tool.pytest.ini_options]
 addopts = [
@@ -48,7 +66,7 @@ env = [
 
 [tool.mypy]
 files = "proxbias"
-python_version = "3.8"
+python_version = "3.9"
 ignore_missing_imports = true
 show_error_codes = true
 # strict = true
@@ -65,4 +83,4 @@ exclude = "tests"
 
 [tool.black]
 line-length = 120
-target-version = ["py38", "py39", "py310"]
+target-version = ["py39"]
