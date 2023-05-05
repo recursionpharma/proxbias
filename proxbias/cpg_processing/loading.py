@@ -29,6 +29,18 @@ def _load_plate_features(path: str):
 
 
 def load_feature_data(metadata_df: pd.DataFrame) -> pd.DataFrame:
+    """Load feature data from Cell Painting Gallery from metadata dataframe.
+
+    Parameters
+    ----------
+    metadata_df : pd.DataFrame
+        Well metadata dataframe
+
+    Returns
+    -------
+    pd.DataFrame
+        Well features
+    """
     cripsr_plates = metadata_df[
         ["Metadata_Source", "Metadata_Batch", "Metadata_Plate", "Metadata_PlateType"]
     ].drop_duplicates()
@@ -46,4 +58,18 @@ def load_feature_data(metadata_df: pd.DataFrame) -> pd.DataFrame:
 
 
 def build_combined_data(metadata: pd.DataFrame, features: pd.DataFrame) -> pd.DataFrame:
+    """Join well metadata and well features
+
+    Parameters
+    ----------
+    metadata : pd.DataFrame
+        Well metadata
+    features : pd.DataFrame
+        Well features
+
+    Returns
+    -------
+    pd.DataFrame
+        Combined dataframe
+    """
     return metadata.merge(features, on=["Metadata_Source", "Metadata_Plate", "Metadata_Well"])
