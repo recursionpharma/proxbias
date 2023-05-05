@@ -153,6 +153,7 @@ def bm_metrics(
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
     Calculate Brunner-Munzel statistics for the whole genome and each chromosome arm
+    Arms with less than 20 within-arm pairs are skipped.
 
     Inputs:
     -------

@@ -1,3 +1,5 @@
+import pandas as pd
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import seaborn as sns
@@ -91,12 +93,12 @@ def plot_bm_bar_pairs(
         patch1 = mpatches.Patch(color=pal[0], label=lab1)
         patch2 = mpatches.Patch(color=pal[1], label=lab2)
         line1 = mpl.lines.Line2D([0], [0], color='grey', lw=3, label='intra ≈ inter', linestyle='--')
-        barplot.legend(handles=[patch1, patch2, line1], loc=legend_loc, fontsize=30)
+        barplot.legend(handles=[patch1, patch2, line1], loc=legend_loc, fontsize=15)
         ax.set_ylim((0.4, 1))
-        ax.tick_params(axis='both', which='major', labelsize=30)
-        ax.set_ylabel(ax.get_ylabel(), fontsize=35)
+        ax.tick_params(axis='both', which='major', labelsize=20)
+        ax.set_ylabel(ax.get_ylabel(), fontsize=20)
     plt.subplots_adjust(hspace=0.4)
     plt.gcf().set_facecolor('white')
     ax.set_facecolor('white')
-    fig.set_size_inches((26, 12))
+    fig.set_size_inches((15, 5))
     plt.savefig(f_name, format=format, bbox_inches = "tight")
