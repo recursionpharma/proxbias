@@ -1,5 +1,5 @@
 import functools
-from typing import Any, Dict, Hashable, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 import pandas as pd
 
@@ -119,14 +119,14 @@ def get_chromosome_info_as_dfs() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFra
 @functools.cache  # type: ignore[attr-defined]
 def get_chromosome_info_as_dicts(
     legacy_bands: bool = False,
-) -> Tuple[Dict[Hashable, Any], Dict[Hashable, Any], Dict[Hashable, Any]]:
+) -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
     """
     Convert the output of `get_chromosome_info_as_dfs` to dictionary form for compatibility
     with legacy notebooks.
 
     Returns
     -------
-    Tuple[Dict[Hashable, Any], Dict[Hashable, Any], Dict[Hashable, Any]]
+    Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any]]
         Dict corresponding to genes, chromosomes, and cytogenic bands
     """
     gene_df, chrom_df, band_df = get_chromosome_info_as_dfs()
@@ -141,7 +141,7 @@ def get_chromosome_info_as_dicts(
     band_df["region"] = band_df.chrom + band_df.name
     if legacy_bands:
         band_df = band_df[["region", "chrom", "band_start", "band_end"]].set_index("region")
-        band_dict = {k: tuple(v) for k, v in band_df.iterrows()}
+        band_dict = {str(k): tuple(v) for k, v in band_df.iterrows()}
     else:
         band_dict = band_df.to_dict(orient="index")
     return gene_dict, chrom_dict, band_dict
