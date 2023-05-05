@@ -21,7 +21,7 @@ def crunch_square_df(
     Inputs:
     -------
     - sims: pd.DataFrame() with matching row and column indices
-    - crunch_fctor: int power of two to compress the data by. 
+    - crunch_fctor: int to compress the data by. 
     """
 
     idx = [(i%crunch_factor==0) for i, x in enumerate(sims.index)]
