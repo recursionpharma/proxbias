@@ -1,7 +1,6 @@
 import functools
 from typing import Any, Dict, Optional, Tuple
 
-
 import pandas as pd
 
 from proxbias.utils.constants import DATA_DIR, VALID_CHROMS
