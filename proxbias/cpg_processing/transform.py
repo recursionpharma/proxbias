@@ -17,7 +17,8 @@ CPG_METADATA_COLS = [
 def preprocess_data(
     data: pd.DataFrame, metadata_cols: list = CPG_METADATA_COLS, drop_image_cols: bool = True
 ) -> pd.DataFrame:
-    """Preprocess data by dropping metadata columns, dropping columns
+    """Preprocess data by dropping feature columns with nan values, dropping the
+    Number_Object columns, and optionaly dropping the Image columns
 
     Parameters
     ----------
@@ -49,7 +50,7 @@ def transform_data(
     variance=0.98,
 ) -> pd.DataFrame:
     """Transform data by scaling and applying PCA. Data is scaled by plate
-    before and after PCA is applied. The experimental replicates are average
+    before and after PCA is applied. The experimental replicates are averaged
     together by taking the mean.
 
     Parameters
