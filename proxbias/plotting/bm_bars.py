@@ -13,7 +13,7 @@ def plot_bm_arm_bars(
     legend: bool=True
 ):
     """
-    Plotting function for barplot of Brunner-Munzel statistics per chromosome arm
+    Plotting function for barplot of Brunner-Munzel probabilities per chromosome arm
     """
     colors = [sns.color_palette(palette)[i] for i in [1, 3, 4, 5]]
     if palette == 'YlGnBu_r':
@@ -35,7 +35,7 @@ def plot_bm_arm_bars(
                 bar_colors.append(colors[2])
             else:
                 bar_colors.append(colors[3])
-        df.stat.plot(kind='bar', color=bar_colors)
+        df.prob.plot(kind='bar', color=bar_colors)
         bar_ax = plt.gca()
         fig = plt.gcf()
         bar_ax.set_ylabel('P(intra-arm cos > inter)')
@@ -65,11 +65,11 @@ def plot_bm_bar_pairs(
     i: int=0,
 ):
     """
-    Plotting function for Brunner-Munzel statistics stratified by `hue` annotations
+    Plotting function for Brunner-Munzel probabilities stratified by `hue` annotations
 
     Inputs:
     -------
-    - df: dataframe with columns 'stat', and hue column
+    - df: dataframe with columns 'prob', and hue column
     - x: x column name
     - y: y column name
     - hue: hue column name
