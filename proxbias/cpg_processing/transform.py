@@ -37,7 +37,7 @@ def preprocess_data(
     metadata = data[metadata_cols]
     features = data[[col for col in data.columns if col not in metadata_cols]]
     features = features.dropna(axis=1)
-    features = features.drop(columns=[col for col in features.columns if col.endswith("Number_Object")])
+    features = features.drop(columns=[col for col in features.columns if col.endswith("Object_Number")])
     if drop_image_cols:
         image_cols = [col for col in features.columns if col.startswith("Image_")]
         features = features.drop(columns=image_cols)
