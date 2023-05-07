@@ -133,3 +133,6 @@ settings.json
 
 # Mac
 .DS_Store
+
+# Scratch work
+scratch/
