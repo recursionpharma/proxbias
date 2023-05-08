@@ -16,7 +16,7 @@ colorama==0.4.6
     # via
     #   radon
     #   tox
-coverage[toml]==7.2.5
+coverage==7.2.5
     # via
     #   -r requirements/dev.in
     #   pytest-cov
@@ -94,7 +94,7 @@ pytest==7.3.1
     #   pytest-cov
 pytest-cov==4.0.0
     # via -r requirements/dev.in
-pyupgrade==3.3.2
+pyupgrade==3.4.0
     # via -r requirements/dev.in
 pyyaml==6.0
     # via
@@ -136,7 +136,7 @@ typing-extensions==4.5.0
     # via
     #   black
     #   mypy
-validate-pyproject[all]==0.12.2
+validate-pyproject==0.12.2
     # via -r requirements/dev.in
 virtualenv==20.23.0
     # via
