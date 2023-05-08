@@ -74,7 +74,7 @@ def q_norm(
     """
     X = np.zeros(df.shape)
     ind_u = np.triu_indices(df.shape[0], 1)
-    tmp_u = pd.DataFrame(df.values[ind_u], columns=['cosine_sim'])
+    tmp_u = pd.DataFrame(df.values[ind_u], columns=["cosine_sim"])
     tmp_u = add_transforms(tmp_u, tmp_u.cosine_sim.dropna(), **trans_args)
     X[ind_u] = tmp_u.norm.values.clip(-1, 1)
     df_norm = pd.DataFrame(X + X.T, index=df.index, columns=df.columns)

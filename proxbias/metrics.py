@@ -158,7 +158,7 @@ def bm_metrics(
     Inputs:
     -------
     - df: square dataframe with full-genome cosine similarities and matching index and columns.
-          Index/columns should contain `chromosome_arm` 
+          Index/columns should contain `chromosome_arm`
     - arms_ord: list or chromosome arm names in order. These should match names in the index/columns of df
     - verbose: whether to print progress
     - sample_frac: factor to downsample between-arm relationships in bigger datasets
@@ -183,29 +183,33 @@ def bm_metrics(
         between_l = len(between)
         if sample_frac < 1 and between_l > 10000:
             # Sample the between relationships to save memory
-            between = np.random.choice(between, int(between_l*sample_frac))
+            between = np.random.choice(between, int(between_l * sample_frac))
         all_within.append(within)
         all_between.append(between)
         if within_l > 20 and between_l > 20:
             bm_result = rank_compare_2indep(within, between, use_t=False)
-            bm_per_arm[arm] = (bm_result.statistic,
-                               bm_result.prob1,
-                               bm_result.test_prob_superior(alternative='larger').pvalue,
-                               within_l,
-                               between_l)
+            bm_per_arm[arm] = (
+                bm_result.statistic,
+                bm_result.prob1,
+                bm_result.test_prob_superior(alternative="larger").pvalue,
+                within_l,
+                between_l,
+            )
 
     bm_per_arm_df = pd.DataFrame(bm_per_arm).T
-    bm_per_arm_df.columns = ['stat', 'prob', 'pval', 'n_within', 'n_between']
-    bm_per_arm_df = bm_per_arm_df.assign(bonf_p=bm_per_arm_df.pval*bm_per_arm_df.shape[0])
+    bm_per_arm_df.columns = ["stat", "prob", "pval", "n_within", "n_between"]
+    bm_per_arm_df = bm_per_arm_df.assign(bonf_p=bm_per_arm_df.pval * bm_per_arm_df.shape[0])
 
     all_w = np.concatenate(all_within)
     all_b = np.concatenate(all_between)
     bm_result = rank_compare_2indep(all_w, all_b, use_t=False)
-    bm_all = {'stat': bm_result.statistic,
-              'prob': bm_result.prob1,
-              'pval': bm_result.test_prob_superior(alternative='larger').pvalue,
-              'n_within': len(all_w),
-              'n_between': len(all_b)}
-    bm_all_df = pd.DataFrame(bm_all, index=['all'])
+    bm_all = {
+        "stat": bm_result.statistic,
+        "prob": bm_result.prob1,
+        "pval": bm_result.test_prob_superior(alternative="larger").pvalue,
+        "n_within": len(all_w),
+        "n_between": len(all_b),
+    }
+    bm_all_df = pd.DataFrame(bm_all, index=["all"])
 
     return bm_all_df, bm_per_arm_df
