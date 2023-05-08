@@ -153,13 +153,13 @@ def mk_gene_mats(
     - clust_df2: split dataframe selected to the desired genes and clustered by df2
     """
     ind = [x in genes for x in split_df.index.get_level_values("display_label")]
-    df = split_df.loc[ind, ind]
+    df = split_df.loc[ind, ind]  # type: ignore
 
     ind = [x in genes for x in df1.index.get_level_values("display_label")]
-    df1_sub = df1.loc[ind, ind]
+    df1_sub = df1.loc[ind, ind]  # type: ignore
 
     ind = [x in genes for x in df2.index.get_level_values("display_label")]
-    df2_sub = df2.loc[ind, ind]
+    df2_sub = df2.loc[ind, ind]  # type: ignore
 
     try:
         idx = scipy_hierarchy.dendrogram(scipy_hierarchy.linkage(scipy_distance.pdist(df1_sub)), no_plot=True)["ivl"]

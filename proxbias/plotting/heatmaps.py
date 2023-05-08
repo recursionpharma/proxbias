@@ -101,10 +101,14 @@ def plot_heatmap(
         # Get midpoints for annotations
         chr_mids = pd.DataFrame(
             (np.insert(chr_pos.values[:-1], 0, 0) + chr_pos.values) / 2, index=chr_pos.index  # type: ignore
-        ).to_dict()[0]
+        ).to_dict()[  # type: ignore
+            0
+        ]
         cent_mids = pd.DataFrame(
             (np.insert(cent_pos.values[:-1], 0, 0) + cent_pos.values) / 2, index=cent_pos.index  # type: ignore
-        ).to_dict()[0]
+        ).to_dict()[  # type: ignore
+            0
+        ]
 
     # Hide X and Y axes label marks
     ax = plt.gca()
