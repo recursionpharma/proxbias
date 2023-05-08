@@ -131,7 +131,7 @@ def plot_heatmap(
         s = sims.shape[0]
         for ch in chr_mids:
             # Labels across the top
-            if label_locy == None:
+            if label_locy is None:
                 label_locy = -0.008 * s
             # Labels on top
             ax.text(
@@ -146,7 +146,7 @@ def plot_heatmap(
         s = sims.shape[0]
         for cent in cent_mids:
             # Labels across the top
-            if label_locy == None:
+            if label_locy is None:
                 label_locy = -0.008 * s
             ax.text(cent_mids[cent], label_locy, cent, ha="left", rotation=lab_rot, size=lab_s)
             # Labels on the right
