@@ -2,8 +2,9 @@ import numpy as np
 import pandas as pd
 from scipy import stats as ss
 
+
 def _get_percentiles(
-    null: pd.Series, 
+    null: pd.Series,
     x: pd.Series,
 ) -> pd.Series:
     """
@@ -12,15 +13,17 @@ def _get_percentiles(
     percentile_data = np.searchsorted(null, x) / len(null)
     return pd.Series(data=percentile_data, index=x.index, name="percentiles")
 
+
 def _transform(
-    percentiles: pd.Series, 
-    norm: ss.norm, 
+    percentiles: pd.Series,
+    norm: ss.norm,
 ) -> pd.Series:
     """
     transform `percentiles` into corresponding values in `norm`
     """
     rescaled_norm = norm.ppf(percentiles)
     return pd.Series(data=rescaled_norm, index=percentiles.index, name="norm")
+
 
 def add_transforms(
     distance_df: pd.DataFrame,
@@ -61,6 +64,7 @@ def add_transforms(
     norms[distance_df[distance_col].isna()] = np.nan
     return pd.concat([distance_df, percs, norms], axis=1)
 
+
 def q_norm(
     df: pd.DataFrame,
     trans_args: dict = {},
@@ -72,7 +76,7 @@ def q_norm(
     ind_u = np.triu_indices(df.shape[0], 1)
     tmp_u = pd.DataFrame(df.values[ind_u], columns=['cosine_sim'])
     tmp_u = add_transforms(tmp_u, tmp_u.cosine_sim.dropna(), **trans_args)
-    X[ind_u] = tmp_u.norm.values.clip(-1,1)
+    X[ind_u] = tmp_u.norm.values.clip(-1, 1)
     df_norm = pd.DataFrame(X + X.T, index=df.index, columns=df.columns)
     np.fill_diagonal(df_norm.values, 1)
     return df_norm

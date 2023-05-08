@@ -11,7 +11,7 @@ def harmonize_data(
     data1: Bunch,
     data2: Bunch,
     cols: list = ['display_label', 'chromosome', 'chromosome_arm', 'chr_idx', 'gene_bp'],
-    kind: str ='intersection',
+    kind: str = 'intersection',
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
     Make dataframes with index of `cols` and features as values. 
@@ -32,11 +32,15 @@ def harmonize_data(
     """
 
     for x in ['metadata', 'features']:
-        if x not in data1: raise KeyError(f'data1 must contain {x}')
-        if x not in data2: raise KeyError(f'data2 must contain {x}')
+        if x not in data1:
+            raise KeyError(f'data1 must contain {x}')
+        if x not in data2:
+            raise KeyError(f'data2 must contain {x}')
     for x in cols:
-        if x not in data1.metadata.columns: raise KeyError(f'{x} is not in data1.metadata')
-        if x not in data2.metadata.columns: raise KeyError(f'{x} is not in data2.metadata')
+        if x not in data1.metadata.columns:
+            raise KeyError(f'{x} is not in data1.metadata')
+        if x not in data2.metadata.columns:
+            raise KeyError(f'{x} is not in data2.metadata')
     assert kind in ('union', 'intersection'), 'Kind should be "union" or "intersection"'
 
     g1 = data1.metadata[cols[0]].unique()
@@ -44,8 +48,8 @@ def harmonize_data(
 
     d1 = data1.features.copy()
     d2 = data2.features.copy()
-    d1 = d1.set_index(pd.MultiIndex.from_frame(data1.metadata.loc[:,cols]))
-    d2 = d2.set_index(pd.MultiIndex.from_frame(data2.metadata.loc[:,cols]))
+    d1 = d1.set_index(pd.MultiIndex.from_frame(data1.metadata.loc[:, cols]))
+    d2 = d2.set_index(pd.MultiIndex.from_frame(data2.metadata.loc[:, cols]))
 
     if kind == 'union':
         all_genes = np.union1d(g1, g2)
@@ -70,10 +74,11 @@ def harmonize_data(
 
     print(f'{len(g1)} genes in dataset1 {len(g2)} genes in dataset2, {len(all_genes)} in the {kind}')
 
-    # Sort by chrom index and bp 
+    # Sort by chrom index and bp
     d1 = d1.sort_values(['chr_idx', 'gene_bp', 'display_label'])
     d2 = d2.sort_values(['chr_idx', 'gene_bp', 'display_label'])
     return d1, d2
+
 
 def make_pairwise_cos(
     df: pd.DataFrame,
@@ -95,8 +100,9 @@ def make_pairwise_cos(
         mat = mat.astype(dtype)
     return pd.DataFrame(mat, index=df.index, columns=df.index)
 
+
 def make_split_cosmat(
-    d1_cos: pd.DataFrame, 
+    d1_cos: pd.DataFrame,
     d2_cos: pd.DataFrame,
 ) -> pd.DataFrame:
     """
@@ -121,10 +127,11 @@ def make_split_cosmat(
 
     return pd.DataFrame(split_mat, index=d1_cos.index, columns=d1_cos.columns)
 
+
 def mk_gene_mats(
     genes: list,
-    split_df: pd.DataFrame, 
-    df1: pd.DataFrame, 
+    split_df: pd.DataFrame,
+    df1: pd.DataFrame,
     df2: pd.DataFrame,
 ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """

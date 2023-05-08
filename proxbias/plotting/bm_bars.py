@@ -8,9 +8,9 @@ import seaborn as sns
 def plot_bm_arm_bars(
     df: pd.DataFrame,
     f_name: str,
-    palette: str='YlGnBu_r',
-    format: str='png',
-    legend: bool=True
+    palette: str = 'YlGnBu_r',
+    format: str = 'png',
+    legend: bool = True
 ):
     """
     Plotting function for barplot of Brunner-Munzel probabilities per chromosome arm
@@ -39,10 +39,10 @@ def plot_bm_arm_bars(
         bar_ax = plt.gca()
         fig = plt.gcf()
         bar_ax.set_ylabel('P(intra-arm cos > inter)')
-        bar_ax.set_xticklabels([xtl.get_text().replace('chr', '') for xtl in bar_ax.get_xticklabels()]);
+        bar_ax.set_xticklabels([xtl.get_text().replace('chr', '') for xtl in bar_ax.get_xticklabels()])
         bar_ax.set_xticklabels(bar_ax.get_xticklabels(), rotation=0)
         bar_ax.set_ylim((0.4, 1))
-        plt.plot(plt.gca().get_xlim(), [.5,.5], ':', c='k')
+        plt.plot(plt.gca().get_xlim(), [.5, .5], ':', c='k')
         if legend:
             bar_ax.legend(handles=[patch1, patch2, patch3, patch4], loc=(1.01, 0.3))
         for tick in bar_ax.xaxis.get_major_ticks()[1::2]:
@@ -50,19 +50,20 @@ def plot_bm_arm_bars(
         fig.set_size_inches((15, 5))
         plt.gcf().set_facecolor('white')
         if f_name is not None:
-            plt.savefig(f_name, dpi=600, format=format, bbox_inches = "tight")
-            
+            plt.savefig(f_name, dpi=600, format=format, bbox_inches="tight")
+
+
 def plot_bm_bar_pairs(
-    df: pd.DataFrame, 
+    df: pd.DataFrame,
     x: str,
     y: str,
     hue: str,
     lab1: str,
     lab2: str,
-    legend_loc: str='upper center',
-    f_name: str='test.svg', 
-    format: str='svg',
-    i: int=0,
+    legend_loc: str = 'upper center',
+    f_name: str = 'test.svg',
+    format: str = 'svg',
+    i: int = 0,
 ):
     """
     Plotting function for Brunner-Munzel probabilities stratified by `hue` annotations
@@ -83,9 +84,9 @@ def plot_bm_bar_pairs(
     fig, ax = plt.subplots(nrows=1, ncols=1)
     with sns.axes_style("white"), sns.plotting_context("notebook", font_scale=2):
         pal = [palette[i * 2], palette[i * 2 + 1]]
-        barplot = sns.barplot(data=df, x=x, y=y, hue=hue, palette = pal, ax=ax);
-        barplot.axhline(0.5, linestyle='--', color='grey');
-        barplot.set_xticklabels([xtl.get_text().replace('chr', '') for xtl in barplot.get_xticklabels()]);
+        barplot = sns.barplot(data=df, x=x, y=y, hue=hue, palette=pal, ax=ax)
+        barplot.axhline(0.5, linestyle='--', color='grey')
+        barplot.set_xticklabels([xtl.get_text().replace('chr', '') for xtl in barplot.get_xticklabels()])
         barplot.set_xticklabels(barplot.get_xticklabels(), rotation=0)
         for tick in barplot.xaxis.get_major_ticks()[1::2]:
             tick.set_pad(30)
@@ -101,4 +102,4 @@ def plot_bm_bar_pairs(
     plt.gcf().set_facecolor('white')
     ax.set_facecolor('white')
     fig.set_size_inches((15, 5))
-    plt.savefig(f_name, format=format, bbox_inches = "tight")
+    plt.savefig(f_name, format=format, bbox_inches="tight")
