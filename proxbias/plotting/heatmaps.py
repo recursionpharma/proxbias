@@ -89,7 +89,7 @@ def plot_heatmap(
 
     if drop_chry and "chromosome" in sims.index.names:
         noy_idx = sims.index.get_level_values("chromosome") != "chrY"
-        sims = sims.copy().loc[noy_idx, noy_idx]
+        sims = sims.copy().loc[noy_idx, noy_idx]  # type: ignore
 
     if show_chr_lines or show_chroms or show_cent_lines or show_chrom_arms:
         # Get the position of all the chromosomes and centromeres
@@ -100,15 +100,11 @@ def plot_heatmap(
         cent_pos_p = cent_pos[[x[-1] == "p" for x in cent_pos.index]]
         # Get midpoints for annotations
         chr_mids = pd.DataFrame(
-            (np.insert(chr_pos.values[:-1], 0, 0) + chr_pos.values) / 2, index=chr_pos.index
-        ).to_dict()[  # type: ignore
-            0
-        ]
+            (np.insert(chr_pos.values[:-1], 0, 0) + chr_pos.values) / 2, index=chr_pos.index  # type: ignore
+        ).to_dict()[0]
         cent_mids = pd.DataFrame(
-            (np.insert(cent_pos.values[:-1], 0, 0) + cent_pos.values) / 2, index=cent_pos.index
-        ).to_dict()[  # type: ignorexs
-            0
-        ]
+            (np.insert(cent_pos.values[:-1], 0, 0) + cent_pos.values) / 2, index=cent_pos.index  # type: ignore
+        ).to_dict()[0]
 
     # Hide X and Y axes label marks
     ax = plt.gca()
