@@ -30,7 +30,7 @@ def add_transforms(
     null_distribution: pd.Series,
     *,
     distance_col: str = "cosine_sim",
-    loc: int = 0.0,
+    loc: float = 0.0,
     scale: float = 0.2,
 ) -> pd.DataFrame:
     """Obtain the percentile ranking transformed values for a dataframe.
@@ -49,7 +49,7 @@ def add_transforms(
     - distribution of distances from the underlying map to percentile rank from.
     - distance_col (str, optional): The column in the distance_df to map into
     - the transformed values. Defaults to 'cosine_sim'.
-    - loc (int, optional): Used for the center of the normal distribution. Defaults to 0.0
+    - loc (float, optional): Used for the center of the normal distribution. Defaults to 0.0
     - scale (int, optional): Used for the scale of the normal distribution. Defaults to 0.2
     Returns:
     --------
