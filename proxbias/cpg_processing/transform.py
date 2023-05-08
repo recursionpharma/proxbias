@@ -46,7 +46,7 @@ def preprocess_data(
 
 def transform_data(
     data: pd.DataFrame,
-    metadata_cols=CPG_METADATA_COLS,
+    metadata_cols: list = CPG_METADATA_COLS,
     variance=0.98,
 ) -> pd.DataFrame:
     """Transform data by scaling and applying PCA. Data is scaled by plate
@@ -57,10 +57,10 @@ def transform_data(
     ----------
     data : pd.DataFrame
         Data to transform
-    metadata_cols : _type_, optional
+    metadata_cols : list, optional
         Metadata columns, by default CPG_METADATA_COLS
     variance : float, optional
-        variance to keep after PCA, by default 0.98
+        Variance to keep after PCA, by default 0.98
 
     Returns
     -------

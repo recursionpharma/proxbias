@@ -1,6 +1,7 @@
 # proxbias
 
-Proximity Bias Stuff
+Code to support the publication "High-resolution genome-wide mapping of chromosome-arm-scale truncations induced by CRISPR-Cas9 editing".
+The preprint is on bioRxiv [here](https://www.biorxiv.org/content/10.1101/2023.04.15.537038v1.article-metrics)
 
 ## Installation
 
