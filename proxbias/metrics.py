@@ -8,6 +8,7 @@ from statsmodels.stats.nonparametric import rank_compare_2indep
 
 from proxbias.utils.chromosome_info import get_chromosome_info_as_dfs
 from proxbias.utils.cosine_similarity import cosine_similarity
+from proxbias.utils.constants import ARMS_ORD
 
 
 def _monte_carlo_brunner_munzel(
@@ -50,9 +51,9 @@ def _prep_data(
     gene_df = gene_df.loc[allowed_genes]
 
     gigb = gene_info.groupby("chrom_arm_name")
-    genes_by_arm = pd.concat([gigb.apply(lambda x: list(x.index)), gigb.size()], axis="columns").rename(
-        columns={0: "genes", 1: "count"}
-    )
+    genes_by_arm = pd.concat(  # type: ignore[call-overload]
+        [gigb.apply(lambda x: list(x.index)), gigb.size()], axis="columns"
+    ).rename(columns={0: "genes", 1: "count"})
     cossims = cosine_similarity(gene_df, index_names=("gene_A", "gene_B"))
 
     return cossims, gene_info, genes_by_arm
@@ -142,3 +143,69 @@ def genome_proximity_bias_score(
     if return_samples:
         return prob_intra_greater, pvalue, intra_arm_samples, inter_arm_samples
     return prob_intra_greater, pvalue
+
+
+def bm_metrics(
+    df: pd.DataFrame,
+    arms_ord: list=ARMS_ORD,
+    verbose: bool=False, 
+    sample_frac: float=1.0,
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Calculate Brunner-Munzel statistics for the whole genome and each chromosome arm
+    Arms with less than 20 within-arm pairs are skipped.
+
+    Inputs:
+    -------
+    - df: square dataframe with full-genome cosine similarities and matching index and columns.
+          Index/columns should contain `chromosome_arm` 
+    - arms_ord: list or chromosome arm names in order. These should match names in the index/columns of df
+    - verbose: whether to print progress
+    - sample_frac: factor to downsample between-arm relationships in bigger datasets
+
+    Outputs:
+    --------
+    - bm_all_df: dataframe of statistics for the whole genome tests
+    - bm_per_arm_df: dataframe of statistics for each chromosome arm
+    """
+    bm_per_arm = {}
+    all_within = []
+    all_between = []
+
+    for arm in arms_ord:
+        arm_mat = df.query(f'chromosome_arm=="{arm}"')
+        ind = np.array([x in arm_mat.index for x in arm_mat.columns])
+        within = arm_mat.values[:,ind][np.triu_indices(arm_mat.shape[0], 1)]
+        between = arm_mat.values[:,~ind].flatten()
+        if verbose:
+            print(arm, within.shape, between.shape)
+        within_l = len(within) 
+        between_l = len(between)
+        if sample_frac < 1 and between_l > 10000:
+            # Sample the between relationships to save memory
+            between = np.random.choice(between, int(between_l*sample_frac))
+        all_within.append(within)
+        all_between.append(between)
+        if within_l > 20 and between_l > 20:
+            bm_result = rank_compare_2indep(within, between, use_t=False)
+            bm_per_arm[arm] = (bm_result.statistic, 
+                               bm_result.prob1,
+                               bm_result.test_prob_superior(alternative='larger').pvalue,
+                               within_l, 
+                               between_l)
+
+    bm_per_arm_df = pd.DataFrame(bm_per_arm).T
+    bm_per_arm_df.columns = ['stat', 'prob', 'pval', 'n_within', 'n_between']
+    bm_per_arm_df = bm_per_arm_df.assign(bonf_p = bm_per_arm_df.pval*bm_per_arm_df.shape[0])
+
+    all_w = np.concatenate(all_within)
+    all_b = np.concatenate(all_between)
+    bm_result = rank_compare_2indep(all_w, all_b, use_t=False)
+    bm_all = {'stat': bm_result.statistic,
+              'prob': bm_result.prob1, 
+              'pval': bm_result.test_prob_superior(alternative='larger').pvalue,
+              'n_within': len(all_w),
+              'n_between': len(all_b)}
+    bm_all_df = pd.DataFrame(bm_all, index=['all'])
+
+    return bm_all_df, bm_per_arm_df

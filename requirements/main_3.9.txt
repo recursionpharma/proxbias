@@ -330,8 +330,6 @@ scipy==1.10.1
     #   -r requirements/main.in
     #   scikit-learn
     #   statsmodels
-scramp==1.4.4
-    # via pg8000
 seaborn==0.12.2
     # via -r requirements/main.in
 send2trash==1.8.2
