@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from typing import Optional
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -30,7 +31,7 @@ def crunch_square_df(
 
 def plot_heatmap(
     sims: pd.DataFrame,
-    f_name: str = None,
+    f_name: Optional[str] = None,
     format: str = "png",
     crunch_factor: int = 1,
     show_chr_lines: bool = True,
@@ -38,8 +39,8 @@ def plot_heatmap(
     show_chroms: bool = True,
     show_chrom_arms: bool = False,
     figsize: tuple = (20, 20),
-    title: str = None,
-    label_locy: float = None,
+    title: Optional[str] = None,
+    label_locy: Optional[float] = None,
     lab_s: int = 12,
     drop_chry: bool = True,
     show_cbar: bool = True,
