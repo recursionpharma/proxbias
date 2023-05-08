@@ -111,12 +111,12 @@ def make_split_cosmat(
     Note: dataframes must be the same number of rows
     """
     assert d1_cos.shape[0] == d1_cos.shape[1], "df1 must be square"
-    assert d1_cos.index.to_frame().equals(d1_cos.columns.to_frame()), f"Indices must match columns for df1"
+    assert d1_cos.index.to_frame().equals(d1_cos.columns.to_frame()), "Indices must match columns for df1"
     assert d2_cos.shape[0] == d2_cos.shape[1], "Dataframe two must be square"
-    assert d2_cos.index.to_frame().equals(d2_cos.columns.to_frame()), f"Indices must match columns for df2"
+    assert d2_cos.index.to_frame().equals(d2_cos.columns.to_frame()), "Indices must match columns for df2"
     assert d1_cos.shape[0] == d2_cos.shape[0], f"Number of rows must match, got {d1_cos.shape[0]} and {d2_cos.shape[0]}"
-    assert d1_cos.index.to_frame().equals(d2_cos.index.to_frame()), f"Indices must match"
-    assert d1_cos.columns.to_frame().equals(d2_cos.columns.to_frame()), f"Columns must match"
+    assert d1_cos.index.to_frame().equals(d2_cos.index.to_frame()), "Indices must match"
+    assert d1_cos.columns.to_frame().equals(d2_cos.columns.to_frame()), "Columns must match"
 
     split_mat = np.ones(d1_cos.shape)
     ind_u = np.triu_indices(d1_cos.shape[0], 1)
@@ -165,14 +165,14 @@ def mk_gene_mats(
         idx = scipy_hierarchy.dendrogram(scipy_hierarchy.linkage(scipy_distance.pdist(df1_sub)), no_plot=True)["ivl"]
         idx = [int(i) for i in idx]
         clust_df1 = make_split_cosmat(df1_sub.iloc[idx, idx], df2_sub.iloc[idx, idx])
-    except:
+    except AssertionError:
         print("Missing values in df1, couldnt cluster")
         clust_df1 = make_split_cosmat(df1_sub, df2_sub)
     try:
         idx = scipy_hierarchy.dendrogram(scipy_hierarchy.linkage(scipy_distance.pdist(df2_sub)), no_plot=True)["ivl"]
         idx = [int(i) for i in idx]
         clust_df2 = make_split_cosmat(df1_sub.iloc[idx, idx], df2_sub.iloc[idx, idx])
-    except:
+    except AssertionError:
         clust_df2 = make_split_cosmat(df1_sub, df2_sub)
         print("Missing values in df2, couldnt cluster")
 
