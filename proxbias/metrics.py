@@ -197,7 +197,7 @@ def bm_metrics(
             )
 
     bm_per_arm_df = pd.DataFrame(bm_per_arm).T
-    bm_per_arm_df.columns = ["stat", "prob", "pval", "n_within", "n_between"]
+    bm_per_arm_df.columns = ["stat", "prob", "pval", "n_within", "n_between"]  # type: ignorexs
     bm_per_arm_df = bm_per_arm_df.assign(bonf_p=bm_per_arm_df.pval * bm_per_arm_df.shape[0])
 
     all_w = np.concatenate(all_within)

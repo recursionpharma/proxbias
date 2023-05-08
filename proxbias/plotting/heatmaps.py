@@ -23,7 +23,7 @@ def crunch_square_df(
     """
 
     idx = [(i % crunch_factor == 0) for i, x in enumerate(sims.index)]
-    new_index = sims.index[idx]
+    new_index = sims.index[idx]  # type: ignore
     crunched = block_reduce(sims.values, (crunch_factor, crunch_factor), np.mean)
 
     return pd.DataFrame(crunched, index=new_index, columns=new_index)
@@ -101,10 +101,14 @@ def plot_heatmap(
         # Get midpoints for annotations
         chr_mids = pd.DataFrame(
             (np.insert(chr_pos.values[:-1], 0, 0) + chr_pos.values) / 2, index=chr_pos.index
-        ).to_dict()[0]
+        ).to_dict()[  # type: ignore
+            0
+        ]
         cent_mids = pd.DataFrame(
             (np.insert(cent_pos.values[:-1], 0, 0) + cent_pos.values) / 2, index=cent_pos.index
-        ).to_dict()[0]
+        ).to_dict()[  # type: ignorexs
+            0
+        ]
 
     # Hide X and Y axes label marks
     ax = plt.gca()

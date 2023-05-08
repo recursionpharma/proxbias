@@ -58,7 +58,7 @@ def add_transforms(
     """
     norm = ss.norm(loc=loc, scale=scale)
     null = null_distribution.sort_values().values
-    percs = _get_percentiles(null, distance_df[distance_col])
+    percs = _get_percentiles(null, distance_df[distance_col])  # type: ignore
     norms = _transform(percs, norm)
     percs[distance_df[distance_col].isna()] = np.nan
     norms[distance_df[distance_col].isna()] = np.nan
