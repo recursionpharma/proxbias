@@ -2,8 +2,9 @@ import numpy as np
 import pandas as pd
 from scipy import stats as ss
 
+
 def _get_percentiles(
-    null: pd.Series, 
+    null: pd.Series,
     x: pd.Series,
 ) -> pd.Series:
     """
@@ -12,9 +13,10 @@ def _get_percentiles(
     percentile_data = np.searchsorted(null, x) / len(null)
     return pd.Series(data=percentile_data, index=x.index, name="percentiles")
 
+
 def _transform(
-    percentiles: pd.Series, 
-    norm: ss.norm, 
+    percentiles: pd.Series,
+    norm: ss.norm,
 ) -> pd.Series:
     """
     transform `percentiles` into corresponding values in `norm`
@@ -22,12 +24,13 @@ def _transform(
     rescaled_norm = norm.ppf(percentiles)
     return pd.Series(data=rescaled_norm, index=percentiles.index, name="norm")
 
+
 def add_transforms(
     distance_df: pd.DataFrame,
     null_distribution: pd.Series,
     *,
     distance_col: str = "cosine_sim",
-    loc: int = 0.0,
+    loc: float = 0.0,
     scale: float = 0.2,
 ) -> pd.DataFrame:
     """Obtain the percentile ranking transformed values for a dataframe.
@@ -46,7 +49,7 @@ def add_transforms(
     - distribution of distances from the underlying map to percentile rank from.
     - distance_col (str, optional): The column in the distance_df to map into
     - the transformed values. Defaults to 'cosine_sim'.
-    - loc (int, optional): Used for the center of the normal distribution. Defaults to 0.0
+    - loc (float, optional): Used for the center of the normal distribution. Defaults to 0.0
     - scale (int, optional): Used for the scale of the normal distribution. Defaults to 0.2
     Returns:
     --------
@@ -55,11 +58,12 @@ def add_transforms(
     """
     norm = ss.norm(loc=loc, scale=scale)
     null = null_distribution.sort_values().values
-    percs = _get_percentiles(null, distance_df[distance_col])
+    percs = _get_percentiles(null, distance_df[distance_col])  # type: ignore
     norms = _transform(percs, norm)
     percs[distance_df[distance_col].isna()] = np.nan
     norms[distance_df[distance_col].isna()] = np.nan
     return pd.concat([distance_df, percs, norms], axis=1)
+
 
 def q_norm(
     df: pd.DataFrame,
@@ -70,9 +74,9 @@ def q_norm(
     """
     X = np.zeros(df.shape)
     ind_u = np.triu_indices(df.shape[0], 1)
-    tmp_u = pd.DataFrame(df.values[ind_u], columns=['cosine_sim'])
+    tmp_u = pd.DataFrame(df.values[ind_u], columns=["cosine_sim"])
     tmp_u = add_transforms(tmp_u, tmp_u.cosine_sim.dropna(), **trans_args)
-    X[ind_u] = tmp_u.norm.values.clip(-1,1)
+    X[ind_u] = tmp_u.norm.values.clip(-1, 1)
     df_norm = pd.DataFrame(X + X.T, index=df.index, columns=df.columns)
     np.fill_diagonal(df_norm.values, 1)
     return df_norm
