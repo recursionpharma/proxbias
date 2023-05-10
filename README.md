@@ -21,7 +21,10 @@ include rxrx3 for IP reasons.
 `shinyDepMap benchmark.ipynb` - Load DepMap 19Q3 data and create plots showing an enrichment for within-chromosome arm relationships
 
 # TODO:
+- Add in the u2os expression data
 - Load in DepMap 22Q4 data
+- Load in DepMap shRNA data
+- Add code for gene-level BM stats and plots comparing that to chromosome arm relative position
 - Create whole-genome plots for the DepMap data
 - Demonstrate spitting DepMap cell lines by gene WT/LOF/GOF and assessing proximity bias
 - Link to Recursion's benchmarking repo and show benchmarking results for cpg0016 before and after proximity bias correction
