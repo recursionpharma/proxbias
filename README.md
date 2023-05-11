@@ -27,7 +27,7 @@ include rxrx3 for IP reasons.
 - Load in DepMap shRNA data
 - Add code for gene-level BM stats and plots comparing that to chromosome arm relative position
 - Create whole-genome plots for the DepMap data
-- Demonstrate spitting DepMap cell lines by gene WT/LOF/GOF and assessing proximity bias
+- Code to search DepMap for drivers of proximity bias
 - Link to Recursion's benchmarking repo and show benchmarking results for cpg0016 before and after proximity bias correction
 - Add in code to analyze RNA sequencing data
-
+ß
