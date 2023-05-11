@@ -2,8 +2,6 @@ import concurrent.futures
 from concurrent.futures import ThreadPoolExecutor
 
 import pandas as pd
-from sklearn.utils import Bunch
-from typing import List
 
 from proxbias.utils.data_utils import _get_data_path
 
