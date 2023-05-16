@@ -54,7 +54,9 @@ def _prep_data(
     genes_by_arm = pd.concat(  # type: ignore[call-overload]
         [gigb.apply(lambda x: list(x.index)), gigb.size()], axis="columns"
     ).rename(columns={0: "genes", 1: "count"})
-    cossims = cosine_similarity(gene_df, index_names=("gene_A", "gene_B"))
+    cossims = cosine_similarity(gene_df)
+    cossims.index.name = 'gene_A'
+    cossims.columns.name = 'gene_B'
 
     return cossims, gene_info, genes_by_arm
 
