@@ -242,8 +242,7 @@ def compute_gene_bm_metrics(
             other_arms_df = df.query(f'chromosome_arm != "{chrom_arm!r}"')
             inter_cos_df = cosine_similarity(chrom_arm_df, other_arms_df)
             intra_cos_df = cosine_similarity(chrom_arm_df)
-            for idx, row in chrom_arm_df.iterrows():
-                idx = tuple(idx)  # to circumvent mypy errors
+            for idx, row in chrom_arm_df.iterrows():  # type: ignore
                 inter_cos = inter_cos_df.loc[idx].values
                 intra_cos = intra_cos_df.loc[idx].drop(idx).values
                 bm_result = rank_compare_2indep(intra_cos, inter_cos, use_t=False)
