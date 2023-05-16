@@ -213,3 +213,43 @@ def bm_metrics(
     bm_all_df = pd.DataFrame(bm_all, index=["all"])
 
     return bm_all_df, bm_per_arm_df
+
+
+def compute_gene_bm_metrics(
+        df: pd.DataFrame,
+        min_n_genes: int = 20,
+) -> pd.DataFrame:
+    """
+    Compute the Brunner-Munzel statistic of intra- vs. inter-arm cosine similarities
+      for each row in the dataframe, which should correspond to a gene.
+
+    Inputs:
+    -------
+    df: Embeddings for genes. Index should include the level `chromosome_arm`.
+    min_n_genes: Minimum number of genes on a given chromosome arm. Genes on
+      arms with fewer genes will not be included in the results.
+    """
+    bm_per_row = []
+    index_level_names = df.index.names
+    for chrom_arm, chrom_arm_df in df.groupby('chromosome_arm'):
+        if chrom_arm_df.shape[0] >= min_n_genes:
+            other_arms_df = df.query(f'chromosome_arm != "{chrom_arm}"')
+            inter_cos_df = cosine_similarity(chrom_arm_df, other_arms_df)
+            intra_cos_df = cosine_similarity(chrom_arm_df)
+            for idx, row in chrom_arm_df.iterrows():
+                inter_cos = inter_cos_df.loc[idx].values
+                intra_cos = intra_cos_df.loc[idx].drop(idx).values
+                bm_result = rank_compare_2indep(intra_cos, inter_cos, use_t=False)
+                bm_dict = {
+                    "stat": bm_result.statistic,
+                    "prob": bm_result.prob1,
+                    "pval": bm_result.test_prob_superior(alternative="larger").pvalue,
+                    "n_within": intra_cos.shape[0],
+                    "n_between": inter_cos.shape[0],
+                }
+                for idx_level_name, idx_val in zip(index_level_names, idx):
+                    bm_dict[idx_level_name] = idx_val
+                row_bm = pd.Series(bm_dict)
+                bm_per_row.append(row_bm)
+    bm_per_gene_df = pd.concat(bm_per_row, axis=1).T.set_index(index_level_names)
+    return bm_per_gene_df
