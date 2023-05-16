@@ -55,8 +55,8 @@ def _prep_data(
         [gigb.apply(lambda x: list(x.index)), gigb.size()], axis="columns"
     ).rename(columns={0: "genes", 1: "count"})
     cossims = cosine_similarity(gene_df)
-    cossims.index.name = 'gene_A'
-    cossims.columns.name = 'gene_B'
+    cossims.index.name = "gene_A"
+    cossims.columns.name = "gene_B"
 
     return cossims, gene_info, genes_by_arm
 
@@ -218,8 +218,8 @@ def bm_metrics(
 
 
 def compute_gene_bm_metrics(
-        df: pd.DataFrame,
-        min_n_genes: int = 20,
+    df: pd.DataFrame,
+    min_n_genes: int = 20,
 ) -> pd.DataFrame:
     """
     Compute the Brunner-Munzel statistic of intra- vs. inter-arm cosine similarities
@@ -237,7 +237,7 @@ def compute_gene_bm_metrics(
     """
     bm_per_row = []
     index_level_names = df.index.names
-    for chrom_arm, chrom_arm_df in df.groupby('chromosome_arm'):
+    for chrom_arm, chrom_arm_df in df.groupby("chromosome_arm"):
         if chrom_arm_df.shape[0] >= min_n_genes:
             other_arms_df = df.query(f'chromosome_arm != "{chrom_arm}"')
             inter_cos_df = cosine_similarity(chrom_arm_df, other_arms_df)
@@ -262,7 +262,7 @@ def compute_gene_bm_metrics(
 
 
 def compute_bm_centro_telo_rank_correlations(
-        bm_per_gene_df: pd.DataFrame,
+    bm_per_gene_df: pd.DataFrame,
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
     Compute Spearman correlation between per-gene Brunner-Munzel statistics and
@@ -282,28 +282,28 @@ def compute_bm_centro_telo_rank_correlations(
     """
     arm2corr = {}
     arm2sample_size = {}
-    for chrom_arm, arm_df in bm_per_gene_df.groupby('chromosome_arm'):
-        bm_stats = arm_df.sort_index(level='gene_bp', ascending=chrom_arm[-1]=='q').prob
+    for chrom_arm, arm_df in bm_per_gene_df.groupby("chromosome_arm"):
+        bm_stats = arm_df.sort_index(level="gene_bp", ascending=chrom_arm[-1] == "q").prob
         n_genes = len(bm_stats)
         norm_ranks = np.arange(n_genes) / n_genes
         arm2sample_size[chrom_arm] = n_genes
         corr, p = spearmanr(norm_ranks, bm_stats)
         arm2corr[chrom_arm] = corr, p
-    arm_corr_df = pd.DataFrame(arm2corr, index=['corr', 'p']).T
-    arm_corr_df.index.name = 'chromosome_arm'
+    arm_corr_df = pd.DataFrame(arm2corr, index=["corr", "p"]).T
+    arm_corr_df.index.name = "chromosome_arm"
     corr_sample_sizes = pd.Series(arm2sample_size)
-    sample_sizes_table = pd.DataFrame(corr_sample_sizes, columns=['sample size'])
-    sample_sizes_table.index = [c.replace('chr', '') for c in sample_sizes_table.index]
-    sample_sizes_table['chromosome'] = [c.replace('p', '').replace('q', '') for c in sample_sizes_table.index]
-    sample_sizes_table['arm'] = [c[-1] for c in sample_sizes_table.index]
-    order = list(map(str, range(1, 23))) + ['X']
+    sample_sizes_table = pd.DataFrame(corr_sample_sizes, columns=["sample size"])
+    sample_sizes_table.index = [c.replace("chr", "") for c in sample_sizes_table.index]
+    sample_sizes_table["chromosome"] = [c.replace("p", "").replace("q", "") for c in sample_sizes_table.index]
+    sample_sizes_table["arm"] = [c[-1] for c in sample_sizes_table.index]
+    order = list(map(str, range(1, 23))) + ["X"]
     sample_sizes_table = sample_sizes_table.reset_index(drop=True).pivot(
-        index='arm',
-        columns='chromosome',
-        values='sample size').loc[:, order].fillna(0).astype(int).astype(str).replace('0', '-').T
-    sorted_idx = sorted(arm_corr_df.index, key=lambda x: (int(x[3:-1].replace('X', '23').replace('Y', '24')), x[-1]))
+        index="arm",
+        columns="chromosome",
+        values="sample size").loc[:, order].fillna(0).astype(int).astype(str).replace("0", "-").T
+    sorted_idx = sorted(arm_corr_df.index, key=lambda x: (int(x[3:-1].replace("X", "23").replace("Y", "24")), x[-1]))
     arm_corr_df = arm_corr_df.loc[sorted_idx]
     bonf_factor = arm_corr_df.shape[0]
-    arm_corr_df['bonf_p'] = arm_corr_df.p * bonf_factor
-    arm_corr_df['neg_corr'] = -1 * arm_corr_df['corr']
+    arm_corr_df["bonf_p"] = arm_corr_df.p * bonf_factor
+    arm_corr_df["neg_corr"] = -1 * arm_corr_df["corr"]
     return arm_corr_df, sample_sizes_table

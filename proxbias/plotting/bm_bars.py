@@ -8,18 +8,18 @@ import seaborn as sns
 
 
 def plot_stat_arm_bars(
-        df: pd.DataFrame,
-        stat_col: str,
-        pval_col: str,
-        ylabel: str,
-        title: Optional[str] = None,
-        palette: str = "YlGnBu_r",
-        legend: bool = True,
-        ylim: Optional[Tuple[int, int]] = None,
-        ref_line_yval: Optional[float] = None,
-        ref_line_label: str = '_nolegend_',
-        f_name: Optional[str] = None,
-        fmt: str = "png",
+    df: pd.DataFrame,
+    stat_col: str,
+    pval_col: str,
+    ylabel: str,
+    title: Optional[str] = None,
+    palette: str = "YlGnBu_r",
+    legend: bool = True,
+    ylim: Optional[Tuple[int, int]] = None,
+    ref_line_yval: Optional[float] = None,
+    ref_line_label: str = '_nolegend_',
+    f_name: Optional[str] = None,
+    fmt: str = "png",
 ):
     """
     Plotting function for barplot of a statistical test result per chromosome arm.
@@ -83,8 +83,8 @@ def plot_stat_arm_bars(
 
 plot_bm_arm_bars = partial(
     plot_stat_arm_bars,
-    stat_col='prob',
-    pval_col='bonf_p',
+    stat_col="prob",
+    pval_col="bonf_p",
     ylabel="P(intra-arm cos > inter)",
     ylim=(0.4, 1),
     ref_line_yval=0.5,

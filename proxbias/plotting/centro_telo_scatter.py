@@ -6,10 +6,10 @@ import seaborn as sns
 
 
 def plot_centromere_telomere_scatterplots(
-        bm_per_gene_df: pd.DataFrame,
-        arms_to_plot: List[str],
-        f_name: Optional[str] = None,
-        fmt: str = "png",
+    bm_per_gene_df: pd.DataFrame,
+    arms_to_plot: List[str],
+    f_name: Optional[str] = None,
+    fmt: str = "png",
 ):
     """
     Create and optionally save a scatterplot of per-gene Brunner-Munzel statistics
@@ -33,8 +33,8 @@ def plot_centromere_telomere_scatterplots(
         for arm in arms_to_plot:
             arm_df = bm_per_gene_df.query(f'chromosome_arm == "chr{arm}"')
             sorted_arm_df = arm_df.sort_index(
-                level='gene_bp',
-                ascending=arm[-1] == 'q',
+                level="gene_bp",
+                ascending=arm[-1] == "q",
             )
             color = next(palette)
             bm_stats = sorted_arm_df.prob
@@ -53,7 +53,6 @@ def plot_centromere_telomere_scatterplots(
         ax.set_ylabel("P(intra arm cosine > inter)")
         ax.legend()
         ax.set_title("Gene-level proximity bias scores")
-        fig.set_facecolor('white')
+        fig.set_facecolor("white")
         if f_name is not None:
             plt.savefig(f_name, dpi=600, format=fmt, bbox_inches="tight")
-
