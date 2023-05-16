@@ -239,7 +239,7 @@ def compute_gene_bm_metrics(
     index_level_names = df.index.names
     for chrom_arm, chrom_arm_df in df.groupby("chromosome_arm"):
         if chrom_arm_df.shape[0] >= min_n_genes:
-            other_arms_df = df.query(f'chromosome_arm != "{chrom_arm}"')
+            other_arms_df = df.query(f'chromosome_arm != "{chrom_arm!r}"')
             inter_cos_df = cosine_similarity(chrom_arm_df, other_arms_df)
             intra_cos_df = cosine_similarity(chrom_arm_df)
             for idx, row in chrom_arm_df.iterrows():
