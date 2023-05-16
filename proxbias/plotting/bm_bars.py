@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Optional
 from functools import partial
 import pandas as pd
 import matplotlib as mpl
@@ -12,13 +12,13 @@ def plot_stat_arm_bars(
         stat_col: str,
         pval_col: str,
         ylabel: str,
-        title: str = None,
+        title: Optional[str] = None,
         palette: str = "YlGnBu_r",
         legend: bool = True,
-        ylim: Tuple[int, int] = None,
-        ref_line_yval: float = None,
+        ylim: Optional[Tuple[int, int]] = None,
+        ref_line_yval: Optional[float] = None,
         ref_line_label: str = '_nolegend_',
-        f_name: str = None,
+        f_name: Optional[str] = None,
         fmt: str = "png",
 ):
     """
