@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -8,7 +8,7 @@ import seaborn as sns
 def plot_centromere_telomere_scatterplots(
         bm_per_gene_df: pd.DataFrame,
         arms_to_plot: List[str],
-        f_name: str = None,
+        f_name: Optional[str] = None,
         fmt: str = "png",
 ):
     """
