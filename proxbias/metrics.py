@@ -225,9 +225,9 @@ def compute_gene_bm_metrics(
 
     Inputs:
     -------
-    df: Embeddings for genes. Index should include the level `chromosome_arm`.
-    min_n_genes: Minimum number of genes on a given chromosome arm. Genes on
-      arms with fewer genes will not be included in the results.
+    - df: Embeddings for genes. Index should include the level `chromosome_arm`.
+    - min_n_genes: Minimum number of genes on a given chromosome arm. Genes on
+        arms with fewer genes will not be included in the results.
     """
     bm_per_row = []
     index_level_names = df.index.names
