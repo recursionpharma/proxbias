@@ -17,7 +17,7 @@ def plot_stat_arm_bars(
     legend: bool = True,
     ylim: Optional[Tuple[int, int]] = None,
     ref_line_yval: Optional[float] = None,
-    ref_line_label: str = '_nolegend_',
+    ref_line_label: str = "_nolegend_",
     f_name: Optional[str] = None,
     fmt: str = "png",
 ):

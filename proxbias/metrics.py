@@ -297,10 +297,16 @@ def compute_bm_centro_telo_rank_correlations(
     sample_sizes_table["chromosome"] = [c.replace("p", "").replace("q", "") for c in sample_sizes_table.index]
     sample_sizes_table["arm"] = [c[-1] for c in sample_sizes_table.index]
     order = list(map(str, range(1, 23))) + ["X"]
-    sample_sizes_table = sample_sizes_table.reset_index(drop=True).pivot(
-        index="arm",
-        columns="chromosome",
-        values="sample size").loc[:, order].fillna(0).astype(int).astype(str).replace("0", "-").T
+    sample_sizes_table = (
+        sample_sizes_table.reset_index(drop=True)
+            .pivot(index="arm", columns="chromosome", values="sample size")
+            .loc[:, order]
+            .fillna(0)
+            .astype(int)
+            .astype(str)
+            .replace("0", "-")
+            .T
+    )
     sorted_idx = sorted(arm_corr_df.index, key=lambda x: (int(x[3:-1].replace("X", "23").replace("Y", "24")), x[-1]))
     arm_corr_df = arm_corr_df.loc[sorted_idx]
     bonf_factor = arm_corr_df.shape[0]
