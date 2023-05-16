@@ -243,8 +243,8 @@ def compute_gene_bm_metrics(
             inter_cos_df = cosine_similarity(chrom_arm_df, other_arms_df)
             intra_cos_df = cosine_similarity(chrom_arm_df)
             for idx, row in chrom_arm_df.iterrows():  # type: ignore
-                inter_cos = inter_cos_df.loc[idx].values
-                intra_cos = intra_cos_df.loc[idx].drop(idx).values
+                inter_cos = inter_cos_df.loc[idx].values  # type: ignore
+                intra_cos = intra_cos_df.loc[idx].drop(idx).values  # type: ignore
                 bm_result = rank_compare_2indep(intra_cos, inter_cos, use_t=False)
                 bm_dict = {
                     "stat": bm_result.statistic,
@@ -253,7 +253,7 @@ def compute_gene_bm_metrics(
                     "n_within": intra_cos.shape[0],
                     "n_between": inter_cos.shape[0],
                 }
-                for idx_level_name, idx_val in zip(index_level_names, idx):
+                for idx_level_name, idx_val in zip(index_level_names, idx):  # type: ignore
                     bm_dict[idx_level_name] = idx_val
                 row_bm = pd.Series(bm_dict)
                 bm_per_row.append(row_bm)
@@ -283,7 +283,7 @@ def compute_bm_centro_telo_rank_correlations(
     arm2corr = {}
     arm2sample_size = {}
     for chrom_arm, arm_df in bm_per_gene_df.groupby("chromosome_arm"):
-        bm_stats = arm_df.sort_index(level="gene_bp", ascending=chrom_arm[-1] == "q").prob
+        bm_stats = arm_df.sort_index(level="gene_bp", ascending=chrom_arm[-1] == "q").prob  # type: ignore
         n_genes = len(bm_stats)
         norm_ranks = np.arange(n_genes) / n_genes
         arm2sample_size[chrom_arm] = n_genes
@@ -293,7 +293,7 @@ def compute_bm_centro_telo_rank_correlations(
     arm_corr_df.index.name = "chromosome_arm"
     corr_sample_sizes = pd.Series(arm2sample_size)
     sample_sizes_table = pd.DataFrame(corr_sample_sizes, columns=["sample size"])
-    sample_sizes_table.index = [c.replace("chr", "") for c in sample_sizes_table.index]
+    sample_sizes_table.index = [c.replace("chr", "") for c in sample_sizes_table.index]  # type: ignore
     sample_sizes_table["chromosome"] = [c.replace("p", "").replace("q", "") for c in sample_sizes_table.index]
     sample_sizes_table["arm"] = [c[-1] for c in sample_sizes_table.index]
     order = list(map(str, range(1, 23))) + ["X"]
