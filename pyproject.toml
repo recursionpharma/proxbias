@@ -29,6 +29,7 @@ dependencies = [
 	"scikit-learn",
 	"statsmodels",
 	"seaborn",
+	"scikit-image",
 ]
 
 [project.optional-dependencies]
