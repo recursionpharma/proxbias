@@ -30,6 +30,8 @@ dependencies = [
 	"statsmodels",
 	"seaborn",
 	"scikit-image",
+	"pyarrow",
+	"fastparquet",
 ]
 
 [project.optional-dependencies]
