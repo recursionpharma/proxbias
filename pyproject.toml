@@ -29,6 +29,9 @@ dependencies = [
 	"scikit-learn",
 	"statsmodels",
 	"seaborn",
+	"scikit-image",
+	"pyarrow",
+	"fastparquet",
 ]
 
 [project.optional-dependencies]
@@ -85,3 +88,6 @@ exclude = "tests"
 [tool.black]
 line-length = 120
 target-version = ["py39"]
+
+[tool.setuptools]
+packages = ["proxbias"]

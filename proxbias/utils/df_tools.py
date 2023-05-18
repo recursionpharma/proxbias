@@ -10,7 +10,7 @@ import scipy.spatial.distance as scipy_distance
 def harmonize_data(
     data1: Bunch,
     data2: Bunch,
-    cols: list = ["display_label", "chromosome", "chromosome_arm", "chr_idx", "gene_bp"],
+    cols: list = ["gene", "chromosome", "chromosome_arm", "chr_idx", "gene_bp"],
     kind: str = "intersection",
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
@@ -58,25 +58,25 @@ def harmonize_data(
         d2notd1 = np.setdiff1d(g2, g1)
         tmp = np.empty((len(d2notd1), d1.shape[1]))
         tmp[:] = np.nan
-        d1 = pd.concat([d1, pd.DataFrame(tmp, index=d2.query("display_label in @d2notd1").index)])
+        d1 = pd.concat([d1, pd.DataFrame(tmp, index=d2.query("gene in @d2notd1").index)])
 
         d1notd2 = np.setdiff1d(g1, g2)
         tmp = np.empty((len(d1notd2), d2.shape[1]))
         tmp[:] = np.nan
-        d2 = pd.concat([d2, pd.DataFrame(tmp, index=d1.query("display_label in @d1notd2").index)])
+        d2 = pd.concat([d2, pd.DataFrame(tmp, index=d1.query("gene in @d1notd2").index)])
 
     elif kind == "intersection":
         all_genes = np.intersect1d(g1, g2)
 
         # Subset to the shared genes
-        d1 = d1.query("display_label in @all_genes")
-        d2 = d2.query("display_label in @all_genes")
+        d1 = d1.query("gene in @all_genes")
+        d2 = d2.query("gene in @all_genes")
 
     print(f"{len(g1)} genes in dataset1 {len(g2)} genes in dataset2, {len(all_genes)} in the {kind}")
 
     # Sort by chrom index and bp
-    d1 = d1.sort_values(["chr_idx", "gene_bp", "display_label"])
-    d2 = d2.sort_values(["chr_idx", "gene_bp", "display_label"])
+    d1 = d1.sort_values(["chr_idx", "gene_bp", "gene"])
+    d2 = d2.sort_values(["chr_idx", "gene_bp", "gene"])
     return d1, d2
 
 
@@ -152,13 +152,13 @@ def mk_gene_mats(
     - clust_df1: split dataframe selected to the desired genes and clustered by df1
     - clust_df2: split dataframe selected to the desired genes and clustered by df2
     """
-    ind = [x in genes for x in split_df.index.get_level_values("display_label")]
+    ind = [x in genes for x in split_df.index.get_level_values("gene")]
     df = split_df.loc[ind, ind]  # type: ignore
 
-    ind = [x in genes for x in df1.index.get_level_values("display_label")]
+    ind = [x in genes for x in df1.index.get_level_values("gene")]
     df1_sub = df1.loc[ind, ind]  # type: ignore
 
-    ind = [x in genes for x in df2.index.get_level_values("display_label")]
+    ind = [x in genes for x in df2.index.get_level_values("gene")]
     df2_sub = df2.loc[ind, ind]  # type: ignore
 
     try:

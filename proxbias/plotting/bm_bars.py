@@ -1,3 +1,5 @@
+from typing import Tuple, Optional
+from functools import partial
 import pandas as pd
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -5,15 +7,39 @@ import matplotlib.patches as mpatches
 import seaborn as sns
 
 
-def plot_bm_arm_bars(
+def plot_stat_arm_bars(
     df: pd.DataFrame,
-    f_name: str,
+    stat_col: str,
+    pval_col: str,
+    ylabel: str,
+    title: Optional[str] = None,
     palette: str = "YlGnBu_r",
-    format: str = "png",
     legend: bool = True,
+    ylim: Optional[Tuple[int, int]] = None,
+    ref_line_yval: Optional[float] = None,
+    ref_line_label: str = "_nolegend_",
+    f_name: Optional[str] = None,
+    fmt: str = "png",
 ):
     """
-    Plotting function for barplot of Brunner-Munzel probabilities per chromosome arm
+    Plotting function for barplot of a statistical test result per chromosome arm.
+
+    Inputs:
+    -------
+    - df: DataFrame with values to be plotted. Index should contain chromosome
+        arms in the desired order for plotting. Should contain a column with
+        test statistics and a column with p-values.
+    - stat_col: column of `df` containing the statistic to plot as bars
+    - pval_col: column of `df` containing p-values to be used for significance
+    - ylabel: y-axis label for the plot, describing the statistic in `stat_col`
+    - title: optional title for figure
+    - palette: Name of Seaborn palette to use
+    - legend: whether to show a legend
+    - ylim: optional specified y-axis limits
+    - ref_line_yval: value for optional horizontal reference line
+    - ref_line_label: optional label for horizontal reference line
+    - f_name: optional file name to save figure. If None, the figure is not saved.
+    - fmt: format of file to save figure, e.g. 'png', 'svg', etc.
     """
     colors = [sns.color_palette(palette)[i] for i in [1, 3, 4, 5]]
     if palette == "YlGnBu_r":
@@ -24,33 +50,46 @@ def plot_bm_arm_bars(
     patch2 = mpatches.Patch(color=colors[1], label="p<0.01")
     patch3 = mpatches.Patch(color=colors[2], label="p<0.05")
     patch4 = mpatches.Patch(color=colors[3], label="p≥0.05")
-    with sns.axes_style("white"), sns.plotting_context("notebook", font_scale=1.8):
+    with sns.axes_style("white"), sns.plotting_context("notebook", font_scale=1.5):
         bar_colors = []
         for arm in df.index:
-            if df.loc[arm, "bonf_p"] < 0.001:
+            if df.loc[arm, pval_col] < 0.001:
                 bar_colors.append(colors[0])
-            elif df.loc[arm, "bonf_p"] < 0.01:
+            elif df.loc[arm, pval_col] < 0.01:
                 bar_colors.append(colors[1])
-            elif df.loc[arm, "bonf_p"] < 0.05:
+            elif df.loc[arm, pval_col] < 0.05:
                 bar_colors.append(colors[2])
             else:
                 bar_colors.append(colors[3])
-        df.prob.plot(kind="bar", color=bar_colors)
-        bar_ax = plt.gca()
-        fig = plt.gcf()
-        bar_ax.set_ylabel("P(intra-arm cos > inter)")
+        fig, bar_ax = plt.subplots()
+        df[stat_col].plot(kind="bar", color=bar_colors, ax=bar_ax)
+        bar_ax.set_ylabel(ylabel)
+        bar_ax.set_title(title)
         bar_ax.set_xticklabels([xtl.get_text().replace("chr", "") for xtl in bar_ax.get_xticklabels()])
         bar_ax.set_xticklabels(bar_ax.get_xticklabels(), rotation=0)
-        bar_ax.set_ylim((0.4, 1))
-        plt.plot(plt.gca().get_xlim(), [0.5, 0.5], ":", c="k")
+        if ylim is not None:
+            bar_ax.set_ylim(ylim)
+        if ref_line_yval is not None:
+            bar_ax.plot(bar_ax.get_xlim(), [ref_line_yval, ref_line_yval], linestyle=":", c="k", label=ref_line_label)
         if legend:
             bar_ax.legend(handles=[patch1, patch2, patch3, patch4], loc=(1.01, 0.3))
         for tick in bar_ax.xaxis.get_major_ticks()[1::2]:
             tick.set_pad(25)
         fig.set_size_inches((15, 5))
-        plt.gcf().set_facecolor("white")
+        fig.set_facecolor("white")
         if f_name is not None:
-            plt.savefig(f_name, dpi=600, format=format, bbox_inches="tight")
+            plt.savefig(f_name, dpi=600, format=fmt, bbox_inches="tight")
+
+
+plot_bm_arm_bars = partial(
+    plot_stat_arm_bars,
+    stat_col="prob",
+    pval_col="bonf_p",
+    ylabel="P(intra-arm cos > inter)",
+    ylim=(0.4, 1),
+    ref_line_yval=0.5,
+    ref_line_label="intra ≈ inter",
+)
 
 
 def plot_bm_bar_pairs(
@@ -62,7 +101,7 @@ def plot_bm_bar_pairs(
     lab2: str,
     legend_loc: str = "upper center",
     f_name: str = "test.svg",
-    format: str = "svg",
+    fmt: str = "svg",
     i: int = 0,
 ):
     """
@@ -102,4 +141,4 @@ def plot_bm_bar_pairs(
     plt.gcf().set_facecolor("white")
     ax.set_facecolor("white")
     fig.set_size_inches((15, 5))
-    plt.savefig(f_name, format=format, bbox_inches="tight")
+    plt.savefig(f_name, format=fmt, bbox_inches="tight")

@@ -3,7 +3,7 @@ from typing import Optional, Tuple, Union
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
-from scipy.stats import combine_pvalues
+from scipy.stats import combine_pvalues, spearmanr
 from statsmodels.stats.nonparametric import rank_compare_2indep
 
 from proxbias.utils.chromosome_info import get_chromosome_info_as_dfs
@@ -54,7 +54,9 @@ def _prep_data(
     genes_by_arm = pd.concat(  # type: ignore[call-overload]
         [gigb.apply(lambda x: list(x.index)), gigb.size()], axis="columns"
     ).rename(columns={0: "genes", 1: "count"})
-    cossims = cosine_similarity(gene_df, index_names=("gene_A", "gene_B"))
+    cossims = cosine_similarity(gene_df)
+    cossims.index.name = "gene_A"
+    cossims.columns.name = "gene_B"
 
     return cossims, gene_info, genes_by_arm
 
@@ -213,3 +215,101 @@ def bm_metrics(
     bm_all_df = pd.DataFrame(bm_all, index=["all"])
 
     return bm_all_df, bm_per_arm_df
+
+
+def compute_gene_bm_metrics(
+    df: pd.DataFrame,
+    min_n_genes: int = 20,
+) -> pd.DataFrame:
+    """
+    Compute the Brunner-Munzel statistic of intra- vs. inter-arm cosine similarities
+      for each row in the dataframe, which should correspond to a gene.
+
+    Inputs:
+    -------
+    - df: Embeddings for genes. Index should include the level `chromosome_arm`.
+    - min_n_genes: Minimum number of genes on a given chromosome arm. Genes on
+        arms with fewer genes will not be included in the results.
+
+    Outputs:
+    --------
+    - bm_per_gene_df : DataFrame of Brunner-Munzel test results per gene.
+    """
+    bm_per_row = []
+    index_level_names = df.index.names
+    for chrom_arm, chrom_arm_df in df.groupby("chromosome_arm"):
+        if chrom_arm_df.shape[0] >= min_n_genes:
+            other_arms_df = df.query(f'chromosome_arm != "{chrom_arm!r}"')
+            inter_cos_df = cosine_similarity(chrom_arm_df, other_arms_df)
+            intra_cos_df = cosine_similarity(chrom_arm_df)
+            for idx, row in chrom_arm_df.iterrows():  # type: ignore
+                inter_cos = inter_cos_df.loc[idx].values  # type: ignore
+                intra_cos = intra_cos_df.loc[idx].drop(idx).values  # type: ignore
+                bm_result = rank_compare_2indep(intra_cos, inter_cos, use_t=False)
+                bm_dict = {
+                    "stat": bm_result.statistic,
+                    "prob": bm_result.prob1,
+                    "pval": bm_result.test_prob_superior(alternative="larger").pvalue,
+                    "n_within": intra_cos.shape[0],
+                    "n_between": inter_cos.shape[0],
+                }
+                for idx_level_name, idx_val in zip(index_level_names, idx):  # type: ignore
+                    bm_dict[idx_level_name] = idx_val
+                row_bm = pd.Series(bm_dict)
+                bm_per_row.append(row_bm)
+    bm_per_gene_df = pd.concat(bm_per_row, axis=1).T.set_index(index_level_names)
+    return bm_per_gene_df
+
+
+def compute_bm_centro_telo_rank_correlations(
+    bm_per_gene_df: pd.DataFrame,
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Compute Spearman correlation between per-gene Brunner-Munzel statistics and
+      centromere-to-telomere rank for each chromosome arm. Nominal and Bonferroni-
+      corrected p-values are also computed, along with the negative correlation
+      for plotting convenience.
+
+    Inputs:
+    -------
+    - bm_per_gene_df : Dataframe with Brunner-Munzel statistics for each gene.
+        Must also contain the index levels `chromosome_arm` and `gene_bp`.
+
+    Outputs:
+    --------
+    - arm_corr_df : DataFrame of Spearman correlation results per arm
+    - sample_sizes_table : Numbers of genes used for each arm
+    """
+    arm2corr = {}
+    arm2sample_size = {}
+    for chrom_arm, arm_df in bm_per_gene_df.groupby("chromosome_arm"):
+        bm_stats = arm_df.sort_index(level="gene_bp", ascending=chrom_arm[-1] == "q").prob  # type: ignore
+        n_genes = len(bm_stats)
+        norm_ranks = np.arange(n_genes) / n_genes
+        arm2sample_size[chrom_arm] = n_genes
+        corr, p = spearmanr(norm_ranks, bm_stats)
+        arm2corr[chrom_arm] = corr, p
+    arm_corr_df = pd.DataFrame(arm2corr, index=["corr", "p"]).T
+    arm_corr_df.index.name = "chromosome_arm"
+    corr_sample_sizes = pd.Series(arm2sample_size)
+    sample_sizes_table = pd.DataFrame(corr_sample_sizes, columns=["sample size"])
+    sample_sizes_table.index = [c.replace("chr", "") for c in sample_sizes_table.index]  # type: ignore
+    sample_sizes_table["chromosome"] = [c.replace("p", "").replace("q", "") for c in sample_sizes_table.index]
+    sample_sizes_table["arm"] = [c[-1] for c in sample_sizes_table.index]
+    order = list(map(str, range(1, 23))) + ["X"]
+    sample_sizes_table = (
+        sample_sizes_table.reset_index(drop=True)
+        .pivot(index="arm", columns="chromosome", values="sample size")
+        .loc[:, order]
+        .fillna(0)
+        .astype(int)
+        .astype(str)
+        .replace("0", "-")
+        .T
+    )
+    sorted_idx = sorted(arm_corr_df.index, key=lambda x: (int(x[3:-1].replace("X", "23").replace("Y", "24")), x[-1]))
+    arm_corr_df = arm_corr_df.loc[sorted_idx]
+    bonf_factor = arm_corr_df.shape[0]
+    arm_corr_df["bonf_p"] = arm_corr_df.p * bonf_factor
+    arm_corr_df["neg_corr"] = -1 * arm_corr_df["corr"]
+    return arm_corr_df, sample_sizes_table
