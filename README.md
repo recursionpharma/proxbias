@@ -22,12 +22,9 @@ include rxrx3 for IP reasons.
 - `DepMap_PB_Drivers.ipynb` - Use DepMap 22Q4 data to look at differential proximity bias when TP53 and other genes are wild-type vs loss/gain of function.
 
 # TODO:
-- Add in the u2os expression data
 - Load in DepMap 22Q4 data
 - Load in DepMap shRNA data
-- Add code for gene-level BM stats and plots comparing that to chromosome arm relative position
 - Create whole-genome plots for the DepMap data
 - Code to search DepMap for drivers of proximity bias
 - Link to Recursion's benchmarking repo and show benchmarking results for cpg0016 before and after proximity bias correction
 - Add in code to analyze RNA sequencing data
-ß
