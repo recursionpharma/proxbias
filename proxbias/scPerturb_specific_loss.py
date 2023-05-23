@@ -22,7 +22,7 @@ def compute_loss_w_specificity(anndat, blocksize, neighborhood_cnt=150, frac_cut
     loss_3p_ko_cell_frac = np.empty(len(loss))
     i5p = 0
     i3p = 0
-    for aff_gene in tqdm.tqdm(perturbed_genes):
+    for aff_gene in perturbed_genes:
         aff_chr = avar.loc[aff_gene].chromosome
         if pd.isna(aff_chr):
             continue
