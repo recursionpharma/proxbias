@@ -1,6 +1,9 @@
 import os
+import itertools
 import wget
 import scanpy
+import numpy as np
+import pandas as pd
 import infercnvpy
 from proxbias import utils
 
