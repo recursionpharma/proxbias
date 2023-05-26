@@ -16,10 +16,18 @@ aioitertools==0.11.0
     # via aiobotocore
 aiosignal==1.3.1
     # via aiohttp
+anndata==0.9.1
+    # via
+    #   infercnvpy
+    #   scanpy
+asttokens==2.2.1
+    # via stack-data
 async-timeout==4.0.2
     # via aiohttp
 attrs==23.1.0
     # via aiohttp
+backcall==0.2.0
+    # via ipython
 botocore==1.29.76
     # via aiobotocore
 charset-normalizer==3.1.0
@@ -30,6 +38,10 @@ cramjam==2.6.2
     # via fastparquet
 cycler==0.11.0
     # via matplotlib
+decorator==5.1.1
+    # via ipython
+executing==1.2.0
+    # via stack-data
 fastparquet==2023.4.0
     # via proxbias (pyproject.toml)
 fonttools==4.39.3
@@ -42,106 +54,220 @@ fsspec==2023.5.0
     # via
     #   fastparquet
     #   s3fs
+gtfparse==2.0.1
+    # via infercnvpy
+h5py==3.8.0
+    # via
+    #   anndata
+    #   scanpy
 idna==3.4
     # via yarl
+igraph==0.10.4
+    # via leidenalg
 imageio==2.28.1
     # via scikit-image
 importlib-resources==5.12.0
     # via matplotlib
+infercnvpy==0.4.2
+    # via proxbias (pyproject.toml)
+ipython==8.13.2
+    # via infercnvpy
+jedi==0.18.2
+    # via ipython
 jmespath==1.0.1
     # via botocore
 joblib==1.2.0
-    # via scikit-learn
+    # via
+    #   pynndescent
+    #   scanpy
+    #   scikit-learn
 kiwisolver==1.4.4
     # via matplotlib
 lazy-loader==0.2
     # via scikit-image
+leidenalg==0.9.1
+    # via infercnvpy
+llvmlite==0.40.0
+    # via
+    #   numba
+    #   pynndescent
 matplotlib==3.7.1
-    # via seaborn
+    # via
+    #   scanpy
+    #   seaborn
+matplotlib-inline==0.1.6
+    # via ipython
 multidict==6.0.4
     # via
     #   aiohttp
     #   yarl
+natsort==8.3.1
+    # via
+    #   anndata
+    #   scanpy
 networkx==3.1
-    # via scikit-image
+    # via
+    #   scanpy
+    #   scikit-image
+numba==0.57.0
+    # via
+    #   pynndescent
+    #   scanpy
+    #   umap-learn
 numpy==1.24.3
     # via
+    #   anndata
     #   contourpy
     #   fastparquet
+    #   h5py
     #   imageio
+    #   infercnvpy
     #   matplotlib
+    #   numba
     #   pandas
     #   patsy
     #   pyarrow
     #   pywavelets
+    #   scanpy
     #   scikit-image
     #   scikit-learn
     #   scipy
     #   seaborn
     #   statsmodels
     #   tifffile
+    #   umap-learn
 packaging==23.1
     # via
+    #   anndata
     #   fastparquet
     #   matplotlib
+    #   scanpy
     #   scikit-image
     #   statsmodels
 pandas==2.0.1
     # via
+    #   anndata
     #   fastparquet
+    #   infercnvpy
     #   proxbias (pyproject.toml)
+    #   pyreadr
+    #   scanpy
     #   seaborn
     #   statsmodels
+parso==0.8.3
+    # via jedi
 patsy==0.5.3
-    # via statsmodels
+    # via
+    #   scanpy
+    #   statsmodels
+pexpect==4.8.0
+    # via ipython
+pickleshare==0.7.5
+    # via ipython
 pillow==9.5.0
     # via
     #   imageio
     #   matplotlib
     #   scikit-image
+polars==0.17.15
+    # via gtfparse
+prompt-toolkit==3.0.38
+    # via ipython
+ptyprocess==0.7.0
+    # via pexpect
+pure-eval==0.2.2
+    # via stack-data
 pyarrow==12.0.0
     # via proxbias (pyproject.toml)
+pygments==2.15.1
+    # via ipython
+pynndescent==0.5.10
+    # via umap-learn
 pyparsing==3.0.9
     # via matplotlib
+pyreadr==0.4.7
+    # via infercnvpy
 python-dateutil==2.8.2
     # via
     #   botocore
     #   matplotlib
     #   pandas
+pytoml==0.1.21
+    # via infercnvpy
 pytz==2023.3
     # via pandas
 pywavelets==1.4.1
     # via scikit-image
 s3fs==2023.5.0
     # via proxbias (pyproject.toml)
+scanpy==1.9.3
+    # via infercnvpy
 scikit-image==0.20.0
     # via proxbias (pyproject.toml)
 scikit-learn==1.2.2
-    # via proxbias (pyproject.toml)
-scipy==1.9.1
     # via
     #   proxbias (pyproject.toml)
+    #   pynndescent
+    #   scanpy
+    #   umap-learn
+scipy==1.9.1
+    # via
+    #   anndata
+    #   proxbias (pyproject.toml)
+    #   pynndescent
+    #   scanpy
     #   scikit-image
     #   scikit-learn
     #   statsmodels
+    #   umap-learn
 seaborn==0.12.2
-    # via proxbias (pyproject.toml)
+    # via
+    #   proxbias (pyproject.toml)
+    #   scanpy
+session-info==1.0.0
+    # via
+    #   infercnvpy
+    #   scanpy
 six==1.16.0
     # via
+    #   asttokens
     #   patsy
     #   python-dateutil
+stack-data==0.6.2
+    # via ipython
 statsmodels==0.14.0
-    # via proxbias (pyproject.toml)
+    # via
+    #   proxbias (pyproject.toml)
+    #   scanpy
+stdlib-list==0.8.0
+    # via session-info
+texttable==1.6.7
+    # via igraph
 threadpoolctl==3.1.0
     # via scikit-learn
 tifffile==2023.4.12
     # via scikit-image
+tqdm==4.65.0
+    # via
+    #   infercnvpy
+    #   scanpy
+    #   umap-learn
+traitlets==5.9.0
+    # via
+    #   ipython
+    #   matplotlib-inline
 typing-extensions==4.5.0
-    # via aioitertools
+    # via
+    #   aioitertools
+    #   ipython
 tzdata==2023.3
     # via pandas
+umap-learn==0.5.3
+    # via scanpy
 urllib3==1.26.15
     # via botocore
+wcwidth==0.2.6
+    # via prompt-toolkit
 wrapt==1.15.0
     # via aiobotocore
 yarl==1.9.2
