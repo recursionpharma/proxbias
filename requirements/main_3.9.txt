@@ -40,6 +40,8 @@ cycler==0.11.0
     # via matplotlib
 decorator==5.1.1
     # via ipython
+efaar-benchmarking==0.0.4
+    # via proxbias (pyproject.toml)
 executing==1.2.0
     # via stack-data
 fastparquet==2023.4.0
@@ -148,6 +150,7 @@ packaging==23.1
 pandas==2.0.1
     # via
     #   anndata
+    #   efaar-benchmarking
     #   fastparquet
     #   infercnvpy
     #   proxbias (pyproject.toml)
@@ -209,6 +212,7 @@ scikit-image==0.20.0
     # via proxbias (pyproject.toml)
 scikit-learn==1.2.2
     # via
+    #   efaar-benchmarking
     #   proxbias (pyproject.toml)
     #   pynndescent
     #   scanpy

@@ -69,6 +69,8 @@ distlib==0.3.6
     # via virtualenv
 docstr-coverage==2.3.0
     # via proxbias (pyproject.toml)
+efaar-benchmarking==0.0.4
+    # via proxbias (pyproject.toml)
 exceptiongroup==1.1.1
     # via pytest
 executing==1.2.0
@@ -217,6 +219,7 @@ packaging==23.1
 pandas==2.0.1
     # via
     #   anndata
+    #   efaar-benchmarking
     #   fastparquet
     #   infercnvpy
     #   proxbias (pyproject.toml)
@@ -322,6 +325,7 @@ scikit-image==0.20.0
     # via proxbias (pyproject.toml)
 scikit-learn==1.2.2
     # via
+    #   efaar-benchmarking
     #   proxbias (pyproject.toml)
     #   pynndescent
     #   scanpy
