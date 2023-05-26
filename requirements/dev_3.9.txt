@@ -189,6 +189,7 @@ numpy==1.24.3
     #   numba
     #   pandas
     #   patsy
+    #   proxbias (pyproject.toml)
     #   pyarrow
     #   pywavelets
     #   scanpy
@@ -314,7 +315,9 @@ rich==13.3.5
 s3fs==2023.5.0
     # via proxbias (pyproject.toml)
 scanpy==1.9.3
-    # via infercnvpy
+    # via
+    #   infercnvpy
+    #   proxbias (pyproject.toml)
 scikit-image==0.20.0
     # via proxbias (pyproject.toml)
 scikit-learn==1.2.2
@@ -343,7 +346,6 @@ session-info==1.0.0
     #   scanpy
 six==1.16.0
     # via
-    #   asttokens
     #   mando
     #   patsy
     #   python-dateutil
