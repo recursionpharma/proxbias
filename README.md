@@ -26,5 +26,4 @@ include rxrx3 for IP reasons.
 - Load in DepMap shRNA data
 - Create whole-genome plots for the DepMap data
 - Code to search DepMap for drivers of proximity bias
-- Link to Recursion's benchmarking repo and show benchmarking results for cpg0016 before and after proximity bias correction
 - Add in code to analyze RNA sequencing data
