@@ -9,6 +9,21 @@ from proxbias import utils
 
 
 def compute_loss_w_specificity(anndat, blocksize, neighborhood_cnt=150, frac_cutoff=0.7, cnv_cutoff=-0.05):
+    """
+    Compute loss with specificity based on the provided AnnData object.
+
+    Args:
+        anndat (AnnData): AnnData object containing the data.
+        blocksize (int): Block size for computing the loss.
+        neighborhood_cnt (int): Number of neighboring blocks to consider. Default is 150.
+        frac_cutoff (float): Cutoff fraction for low CNV. Default is 0.7.
+        cnv_cutoff (float): CNV cutoff value. Default is -0.05.
+
+    Returns:
+        pd.DataFrame: DataFrame containing the computed loss values.
+
+    """
+
     avar = anndat.var
     cnvarr = anndat.obsm["X_cnv"].toarray() <= cnv_cutoff
     perturbed_genes = list(set(anndat.obs.gene).intersection(avar.index))
@@ -81,56 +96,86 @@ def compute_loss_w_specificity(anndat, blocksize, neighborhood_cnt=150, frac_cut
     return loss
 
 
-def load_and_process_data():
+def get_chromosome_info():
+    """
+    Retrieve chromosome information for genes and return it as a DataFrame.
+
+    Returns:
+        pd.DataFrame: DataFrame containing chromosome information for genes,
+            with gene names as the index and "chromosome" as the column name.
+
+    """
+
     gene_dict, _, _ = utils.chromosome_info.get_chromosome_info_as_dicts()
-    all_genes_bed_HGNC = pd.DataFrame.from_dict(gene_dict, orient="index").rename(columns={"chrom": "chromosome"})
+    return pd.DataFrame.from_dict(gene_dict, orient="index").rename(columns={"chrom": "chromosome"})
 
-    filenames = [
-        "FrangiehIzar2021_RNA",
-        "PapalexiSatija2021_eccite_RNA",
-        "ReplogleWeissman2022_rpe1",
-        "TianKampmann2021_CRISPRi",
-        "AdamsonWeissman2016_GSM2406681_10X010",
-    ]
-    blocksize = 5
-    window = 100
-    neigh = 150
-    for filename in filenames:
-        print(filename)
-        source_path = f"https://zenodo.org/record/7416068/files/{filename}.h5ad?download=1"
-        destination_path = f"{filename}.h5ad"
-        wget.download(source_path, destination_path)
-        ad = scanpy.read_h5ad(destination_path)
-        ad.var = ad.var.rename(columns={"start": "st", "end": "en"}).join(all_genes_bed_HGNC, how="left")
-        if filename.startswith("Adamson"):
-            ad.obs["gene"] = ad.obs.perturbation.apply(lambda x: x.split("_")[0]).fillna("")
-            ad.obs["chromosome"] = ad.obs.gene.apply(lambda x: all_genes_bed_HGNC.chromosome.get(x, "")).fillna("")
-            ad.obs["perturbation_label"] = ad.obs["chromosome"]
-            ad.obs["perturbation_label"].loc[pd.isna(ad.obs.perturbation)] = "control"
-        elif filename.startswith("Papalexi"):
-            ad.obs["gene"] = ad.obs.perturbation.apply(lambda x: x.split("g")[0] if x != "control" else "").fillna("")
-            ad.obs["chromosome"] = ad.obs.gene.apply(lambda x: all_genes_bed_HGNC.chromosome.get(x, "")).fillna("")
-            ad.obs["perturbation_label"] = ad.obs["chromosome"]
-            ad.obs.loc[ad.obs.perturbation == "control", "perturbation_label"] = "control"
-        elif filename.startswith("Replogle"):
-            ad.obs["gene"] = ad.obs["gene"].apply(lambda x: x if x != "non-targeting" else "")
-            ad.obs["chromosome"] = ad.obs.gene.apply(lambda x: ad.var.chromosome.get(x, "")).fillna("")
-            ad.obs["perturbation_label"] = ad.obs["chromosome"]
-            ad.obs.loc[ad.obs.perturbation == "control", "perturbation_label"] = "control"
-        elif filename.startswith("Frangieh") or filename.startswith("Tian"):
-            ad.obs["gene"] = ad.obs.perturbation.apply(lambda x: x if x != "control" else "").fillna("")
-            ad.obs["chromosome"] = ad.obs.gene.apply(lambda x: all_genes_bed_HGNC.chromosome.get(x, "")).fillna("")
-            ad.obs["perturbation_label"] = ad.obs["chromosome"]
-            ad.obs.loc[ad.obs.perturbation == "control", "perturbation_label"] = "control"
 
-        ad = ad[ad.obs.perturbation_label != ""]
-        infercnvpy.tl.infercnv(
-            ad,
-            reference_key="perturbation_label",
-            reference_cat="control",
-            window_size=window,
-            step=blocksize,
-            exclude_chromosomes=None,
-        )
-        res = compute_loss_w_specificity(ad, blocksize, neigh)
-        res.to_csv(os.path.join(utils.constants.DATA_DIR, f"infercnv_{filename}_b{blocksize}_w{window}_n{neigh}.csv"))
+def apply_infercnv_and_save_loss(anndat, blocksize=5, window=100, neigh=150):
+    """
+    Apply infercnv to the provided AnnData object, compute loss with specificity, and save the results to a CSV file.
+
+    Args:
+        anndat (AnnData): AnnData object containing the data.
+        blocksize (int): Block size for infercnv. Default is 5.
+        window (int): Window size for infercnv. Default is 100.
+        neigh (int): Number of neighboring blocks to consider. Default is 150.
+
+    Returns:
+        None
+
+    """
+
+    infercnvpy.tl.infercnv(
+        anndat,
+        reference_key="perturbation_label",
+        reference_cat="control",
+        window_size=window,
+        step=blocksize,
+        exclude_chromosomes=None,
+    )
+    res = compute_loss_w_specificity(anndat, blocksize, neigh)
+    res.to_csv(os.path.join(utils.constants.DATA_DIR, f"infercnv_{filename}_b{blocksize}_w{window}_n{neigh}.csv"))
+
+
+def load_and_process_data(filename: AnnData, chromosome_info):
+    """
+    Load and process AnnData object from the specified file prior to applying `infercnv()`
+
+    Args:
+        filename (str): Name of the file to load. Available options: "FrangiehIzar2021_RNA",
+            "PapalexiSatija2021_eccite_RNA", "ReplogleWeissman2022_rpe1", "TianKampmann2021_CRISPRi",
+            "AdamsonWeissman2016_GSM2406681_10X010".
+        chromosome_info (pd.DataFrame): DataFrame containing gene chromosome information.
+
+    Returns:
+        AnnData: Processed data.
+    """
+
+    print(filename)
+    source_path = f"https://zenodo.org/record/7416068/files/{filename}.h5ad?download=1"
+    destination_path = f"{filename}.h5ad"
+    wget.download(source_path, destination_path)
+    ad = scanpy.read_h5ad(destination_path)
+    ad.var = ad.var.rename(columns={"start": "st", "end": "en"}).join(chromosome_info, how="left")
+    if filename.startswith("Adamson"):
+        ad.obs["gene"] = ad.obs.perturbation.apply(lambda x: x.split("_")[0]).fillna("")
+        ad.obs["chromosome"] = ad.obs.gene.apply(lambda x: chromosome_info.chromosome.get(x, "")).fillna("")
+        ad.obs["perturbation_label"] = ad.obs["chromosome"]
+        ad.obs["perturbation_label"].loc[pd.isna(ad.obs.perturbation)] = "control"
+    elif filename.startswith("Papalexi"):
+        ad.obs["gene"] = ad.obs.perturbation.apply(lambda x: x.split("g")[0] if x != "control" else "").fillna("")
+        ad.obs["chromosome"] = ad.obs.gene.apply(lambda x: chromosome_info.chromosome.get(x, "")).fillna("")
+        ad.obs["perturbation_label"] = ad.obs["chromosome"]
+        ad.obs.loc[ad.obs.perturbation == "control", "perturbation_label"] = "control"
+    elif filename.startswith("Replogle"):
+        ad.obs["gene"] = ad.obs["gene"].apply(lambda x: x if x != "non-targeting" else "")
+        ad.obs["chromosome"] = ad.obs.gene.apply(lambda x: ad.var.chromosome.get(x, "")).fillna("")
+        ad.obs["perturbation_label"] = ad.obs["chromosome"]
+        ad.obs.loc[ad.obs.perturbation == "control", "perturbation_label"] = "control"
+    elif filename.startswith("Frangieh") or filename.startswith("Tian"):
+        ad.obs["gene"] = ad.obs.perturbation.apply(lambda x: x if x != "control" else "").fillna("")
+        ad.obs["chromosome"] = ad.obs.gene.apply(lambda x: chromosome_info.chromosome.get(x, "")).fillna("")
+        ad.obs["perturbation_label"] = ad.obs["chromosome"]
+        ad.obs.loc[ad.obs.perturbation == "control", "perturbation_label"] = "control"
+
+    return ad[ad.obs.perturbation_label != ""]
