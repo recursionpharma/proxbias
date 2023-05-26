@@ -6,7 +6,14 @@ import pandas as pd
 from scipy.stats import combine_pvalues, spearmanr
 from statsmodels.stats.nonparametric import rank_compare_2indep
 
-from proxbias.utils.chromosome_info import get_chromosome_info_as_dfs
+from efaar_benchmarking.utils import (
+    compute_pairwise_metrics,
+    generate_null_cossims,
+    generate_query_cossims,
+    get_benchmark_data,
+)
+
+from proxbias.utils.chromosome_info import get_chromosome_info_as_dfs, get_chromosome_info_as_dicts
 from proxbias.utils.cosine_similarity import cosine_similarity
 from proxbias.utils.constants import ARMS_ORD
 
@@ -313,3 +320,40 @@ def compute_bm_centro_telo_rank_correlations(
     arm_corr_df["bonf_p"] = arm_corr_df.p * bonf_factor
     arm_corr_df["neg_corr"] = -1 * arm_corr_df["corr"]
     return arm_corr_df, sample_sizes_table
+
+
+def _compute_recall(null_cossims, query_cossims, pct_thresholds) -> dict:
+    null_sorted = np.sort(null_cossims)
+    percentiles = np.searchsorted(null_sorted, query_cossims) / len(null_sorted)
+    return sum((percentiles <= np.min(pct_thresholds)) | (percentiles >= np.max(pct_thresholds))) / len(percentiles)
+
+
+def compute_within_cross_pairwise_metrics(data, source, pert_label_col="gene", pct_thresholds=[0.05, 0.95]):
+    gt_data = get_benchmark_data(
+        source_names=source,
+        entity1_name_type=d["entity1_name_type"],
+        entity2_name_type=d["entity2_name_type"],
+    )
+    gene_dict, _, _ = get_chromosome_info_as_dicts()
+
+    entity1_feats = get_feats_w_indices_for_ent_type(data, pert_label_col)
+    entity2_feats = get_feats_w_indices_for_ent_type(data, pert_label_col)
+
+    gt_data["entity1_chrom"] = gt_data.entity1.apply(lambda x: gene_dict[x]["arm"] if x in gene_dict else "no info")
+    gt_data["entity2_chrom"] = gt_data.entity2.apply(lambda x: gene_dict[x]["arm"][x] if x in gene_dict else "no info")
+    df_gg_null = generate_null_cossims(data, d["entity1_type"], d["entity2_type"])
+
+    within_gt_subset = gt_data.query(f"entity1_chrom == entity2_chrom")
+    between_gt_subset = gt_data.query(f"entity1_chrom != entity2_chrom")
+
+    df_gg_within = generate_query_cossims(data, within_gt_subset, d["entity1_type"], d["entity2_type"])
+    df_gg_between = generate_query_cossims(data, between_gt_subset, d["entity1_type"], d["entity2_type"])
+
+    within = {
+        "recall": _compute_recall(df_gg_null, df_gg_within, pct_thresholds),
+    }
+
+    between = {
+        "recall": _compute_recall(df_gg_null, df_gg_between, pct_thresholds),
+    }
+    return within, between
