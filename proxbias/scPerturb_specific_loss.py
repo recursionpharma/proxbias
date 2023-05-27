@@ -41,6 +41,7 @@ def get_telo_centro(arm: str, direction: str) -> Optional[str]:
         return "centromeric" if "3" in direction else "telomeric"
     if arm[-1] == "q":
         return "telomeric" if "3" in direction else "centromeric"
+    return None
 
 
 def compute_loss_w_specificity(
@@ -307,11 +308,13 @@ def generate_save_summary_results(
             allres.append(tmp.sort_values("% affected cells", ascending=False))
 
     allres = pd.concat(allres)
-    allres["Total # cells"] = allres.apply(lambda x: int(x["# affected cells"] / x["% affected cells"] * 100), axis=1)  # type: ignore
-    allres["Telomeric or centromeric"] = allres.apply(  # type: ignore
+    allres["Total # cells"] = allres.apply(
+        lambda x: int(x["# affected cells"] / x["% affected cells"] * 100), axis=1
+    )  # type: ignore
+    allres["Telomeric or centromeric"] = allres.apply(
         lambda x: get_telo_centro(x["Chr arm"], x["Tested loss direction"]), axis=1
-    )
-    allres = allres[  # type: ignore
+    )  # type: ignore
+    allres = allres[
         [
             "Perturbed gene",
             "Perturbation type",
@@ -323,15 +326,15 @@ def generate_save_summary_results(
             "% affected cells",
             "Telomeric or centromeric",
         ]
-    ]
-    allres.to_csv("allres.csv", index=None)
+    ]  # type: ignore
+    allres.to_csv("allres.csv", index=None)  # type: ignore
 
     gr_cols = ["Perturbation type", "Dataset", "Tested loss direction"]
     summaryres = (
         allres.groupby(gr_cols)
         .agg({"Telomeric or centromeric": [len, lambda x: sum(x == "telomeric"), lambda x: sum(x == "centromeric")]})
         .reset_index()
-    )
+    )  # type: ignore
     add_cols = [
         "# targets w/ specific loss",
         "# targets w/ loss towards telomere",
