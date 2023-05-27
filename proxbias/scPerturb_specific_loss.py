@@ -9,7 +9,7 @@ from proxbias import utils
 import infercnvpy
 from scanpy import AnnData
 from scipy.stats import zscore
-from typing import List
+from typing import List, Optional
 from ast import literal_eval
 
 
@@ -307,11 +307,11 @@ def generate_save_summary_results(
             allres.append(tmp.sort_values("% affected cells", ascending=False))
 
     allres = pd.concat(allres)
-    allres["Total # cells"] = allres.apply(lambda x: int(x["# affected cells"] / x["% affected cells"] * 100), axis=1)
-    allres["Telomeric or centromeric"] = allres.apply(
+    allres["Total # cells"] = allres.apply(lambda x: int(x["# affected cells"] / x["% affected cells"] * 100), axis=1)  # type: ignore
+    allres["Telomeric or centromeric"] = allres.apply(  # type: ignore
         lambda x: get_telo_centro(x["Chr arm"], x["Tested loss direction"]), axis=1
     )
-    allres = allres[
+    allres = allres[  # type: ignore
         [
             "Perturbed gene",
             "Perturbation type",
