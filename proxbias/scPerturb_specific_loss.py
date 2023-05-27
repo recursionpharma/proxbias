@@ -1,13 +1,16 @@
 import os
 import itertools
 import wget
-import re
+from re import findall
 import scanpy
 import numpy as np
 import pandas as pd
 from proxbias import utils
 import infercnvpy
 from scanpy import AnnData
+from scipy.stats import zscore
+from typing import List
+from ast import literal_eval
 
 
 def get_telo_centro(arm: str, direction: str) -> str:
@@ -171,8 +174,9 @@ def apply_infercnv_and_save_loss(
         exclude_chromosomes=None,
     )
     res = compute_loss_w_specificity(anndat, blocksize, neigh)
-    res_filename = f"infercnv_{filename}_b{blocksize}_w{window}_n{neigh}.csv"
-    res.to_csv(os.path.join(utils.constants.DATA_DIR, res_filename))
+    res.to_csv(
+        os.path.join(utils.constants.DATA_DIR, make_infercnv_result_file_name(filename, blocksize, window, neigh))
+    )
 
 
 def load_and_process_data(filename: str, chromosome_info: pd.DataFrame) -> AnnData:
@@ -219,12 +223,39 @@ def load_and_process_data(filename: str, chromosome_info: pd.DataFrame) -> AnnDa
     return ad[ad.obs.perturbation_label != ""]
 
 
+def make_infercnv_result_file_name(filename: str, blocksize: int, window: int, neigh: int):
+    return f"{filename}_b{blocksize}_w{window}_n{neigh}.csv"
+
+
 def generate_save_summary_results(
-    filenames, blocksize: int = 5, window: int = 100, neigh: int = 150, zscore_cutoff: float = 3.0
-):
+    filenames: List[str], blocksize: int = 5, window: int = 100, neigh: int = 150, zscore_cutoff: float = 3.0
+) -> None:
+    """
+    Generates and saves summary chromosomal loss results from a list of multiple infercnv result files.
+    The function reads CSV files based on the filenames and performs data processing and aggregation to generate
+    summary results. The results are saved in CSV format.
+
+    Args:
+        filenames (List[str]): A list of filenames to process and generate summary results for.
+        blocksize (int, optional): The block size parameter for processing. Defaults to 5.
+        window (int, optional): The window size parameter for generating file name. Defaults to 100.
+        neigh (int, optional): The neighborhood count parameter for processing. Defaults to 150.
+        zscore_cutoff (float, optional): The z-score cutoff value for filtering specific loss. Defaults to 3.0.
+
+    Returns:
+        None
+
+    Raises:
+        FileNotFoundError: If the CSV file for a given filename is not found.
+
+    Example usage:
+        >>> filenames = ["PapalexiSatija2021_eccite_RNA", "TianKampmann2021_CRISPRi"]
+        >>> generate_save_summary_results(filenames)
+    """
+
     spec_genes_dict = {}
     for filename in filenames:
-        res = pd.read_csv(f"f{filename}_b{blocksize}_w{window}_n{neigh}.csv", index_col=0)
+        res = pd.read_csv(make_infercnv_result_file_name(filename, blocksize, window, neigh), index_col=0)
         for c in ["3p", "5p"]:
             col = f"loss{c}_cellfrac"
             col2 = f"loss{c}_cellcount"
@@ -243,8 +274,8 @@ def generate_save_summary_results(
     tested_gene_count_dict = {}
     allres = []
     for filename in filenames:
-        res = pd.read_csv(f"f{filename}_b{blocksize}_w{window}_n{neigh}.csv", index_col=0)
-        filename_short = re.findall("[A-Z][^A-Z]*", filename)[0]
+        res = pd.read_csv(make_infercnv_result_file_name(filename, blocksize, window, neigh), index_col=0)
+        filename_short = get_short_filename(filename)
         tested_gene_count_dict[filename_short] = len(res.aff_gene.unique())
         for c in ["3p", "5p"]:
             col = f"loss{c}_cellfrac"
@@ -263,9 +294,7 @@ def generate_save_summary_results(
             )
             tmp["% affected cells"] = tmp["% affected cells"].apply(lambda x: round(x * 100, 2))
             tmp["Dataset"] = filename_short
-            tmp["Perturbation type"] = (
-                "CRISPR-cas9" if filename_short in ["Frangieh", "Papalexi", "Dixit"] else "CRISPRi"
-            )
+            tmp["Perturbation type"] = "CRISPR-cas9" if filename_short in ["Frangieh", "Papalexi"] else "CRISPRi"
             tmp["Tested loss direction"] = c.replace("p", "'")
             allres.append(tmp.sort_values("% affected cells", ascending=False))
 
@@ -309,36 +338,89 @@ def generate_save_summary_results(
     summaryres.to_csv("summaryres.csv", index=None)
 
 
-def generate_plot_args():
-    perts2check_d = {}
-    plot_args = {}
+def get_short_filename(filename):
+    """
+    Retrieves the short filename from a given filename by extracting the sequence starting with a capital letter
+    until the next capital letter is encountered.
 
-    plot_args[filename] = {}
+    Args:
+        filename (str): The original filename from which the short filename will be extracted.
+
+    Returns:
+        str: The short filename containing the first sequence of uppercase letters found in the given filename,
+             or an empty string if no uppercase letters are present.
+
+    Raises:
+        IndexError: If no uppercase letters are found in the given filename.
+
+    Examples:
+        >>> get_short_filename("PapalexiSatija2021_eccite_RNA")
+        'Papalexi'
+        >>> get_short_filename("TianKampmann2021_CRISPRi")
+        'Tian'
+        >>> get_short_filename("data_file.csv")
+        Raises Index Error since there are no capital letters
+    """
+    return findall("[A-Z][^A-Z]*", filename)[0]
+
+
+def get_mid_ticks(lst: List[int]) -> List[int]:  # assuming that `lst` includes 0 at the beginning!!
+    """
+    Takes a list of values and calculates the middle ticks by averaging each value with its preceding
+    value and returns a list of the calculated middle ticks.
+
+    Args:
+        lst (List[int]): A list of values.
+
+    Returns:
+        List[int]: A list of calculated middle ticks.
+
+    Examples:
+        >>> ticks = get_mid_ticks([0, 10, 20, 30, 40])
+        >>> print(ticks)
+
+    """
+    return [(lst[i] - lst[i - 1]) / 2 + lst[i - 1] for i in range(1, len(lst))]
+
+
+def generate_plot_args(
+    filename: str, allres: pd.DataFrame, blocksize: int = 5, window: int = 100, neigh: int = 150
+) -> dict:
+    """
+    Generates plot arguments for visualization based on a given filename and processing parameters.
+    The function reads an H5AD file based on the filename, performs data processing, and extracts plot arguments
+    for visualization of the chromosomal loss. The resulting plot arguments are returned as a dictionary.
+    Note that although this functions reads the chromosomal loss from the `allres` parameter, we rerun infercnvpy
+    for the subset of genes that are in `allres` in order to retrieve the actual infercnv values for the visualization.
+
+    Args:
+        filename (str): The name of the file to process.
+        allres (pd.DataFrame): The result data frame containing information from the earlier full infercnv run.
+        blocksize (int, optional): The block size parameter for processing. Defaults to 5.
+        window (int, optional): The window size parameter for processing. Defaults to 100.
+        neigh (int, optional): The neighborhood count parameter for processing. Defaults to 150.
+
+    Returns:
+        dict: A dictionary containing the plot arguments for visualization.
+
+    Raises:
+        FileNotFoundError: If the H5AD file for the given filename is not found.
+    """
+
+    plot_args = {}
     ad = scanpy.read_h5ad(f"{filename}.h5ad")
-    filename_short = re.findall("[A-Z][^A-Z]*", filename)[0]
+    filename_short = get_short_filename(filename)
     perts2check_df = allres[
         (allres["Dataset"] == filename_short) & (allres["# affected cells"] >= cell_count_thrs[filename_short])
     ]
     perts2check = sorted(set(perts2check_df["Perturbed gene"]))
-    perts2check_d[filename] = perts2check
 
     ad.var = ad.var.rename(columns={"start": "st", "end": "en"}).join(all_genes_bed_HGNC, how="left")
-    if filename.startswith("Papalexi"):
+    if filename_short == "Papalexi":
         ad.obs["gene"] = (
             ad.obs.perturbation.apply(lambda x: x.split("g")[0] if x != "control" else "").fillna("").astype(str)
         )
-        print(ad.obs["gene"].unique())
-    elif filename.startswith("Dixit"):
-        ad = ad[
-            (ad.obs.perturbation == "control")
-            | ((ad.obs.perturbation.str.count("-") > 0) & ~ad.obs.perturbation.str.contains("INTERGENIC"))
-        ].copy()
-        ad.obs["gene"] = (
-            ad.obs.perturbation.apply(lambda x: x.split("-")[1].split("sg")[1] if x != "control" else "")
-            .fillna("")
-            .astype(str)
-        )
-    elif filename.startswith("Frangieh"):
+    elif filename_short == "Frangieh":
         ad.obs["gene"] = ad.obs.perturbation.apply(lambda x: x if x != "control" else "").fillna("").astype(str)
     ad.obs.loc[ad.obs.perturbation == "control", "gene"] = "control"
     ad = ad[ad.obs.gene.isin(perts2check + ["control"])]
@@ -346,7 +428,7 @@ def generate_plot_args():
         ad, reference_key="gene", reference_cat="control", window_size=window, step=blocksize, exclude_chromosomes=None
     )
 
-    res = pd.read_csv(f"f{filename}_b{blocksize}_w{window}_n{neigh}.csv", index_col=0)
+    res = pd.read_csv(make_infercnv_result_file_name(filename, blocksize, window, neigh), index_col=0)
     loss_arrs = []
     other_arrs = []
     loss_seps = []
@@ -356,7 +438,7 @@ def generate_plot_args():
         res_p = res[(res.ko_gene == p) & (res.aff_gene == p)]
         direcs = list(perts2check_df[perts2check_df["Perturbed gene"] == p]["Tested loss direction"])
         loss_cell_inds = sum(
-            [[ad.obs.index.get_loc(x) for x in ast.literal_eval(res_p[f"loss{d[0]}p_cells"].iloc[0])] for d in direcs],
+            [[ad.obs.index.get_loc(x) for x in literal_eval(res_p[f"loss{d[0]}p_cells"].iloc[0])] for d in direcs],
             [],
         )
         other_cell_inds = list(
@@ -376,15 +458,13 @@ def generate_plot_args():
         loss_seps.append(len(loss_cell_inds) if len(loss_seps) == 0 else len(loss_cell_inds) + loss_seps[-1])
         other_seps.append(len(other_cell_inds) if len(other_seps) == 0 else len(other_cell_inds) + other_seps[-1])
 
-    plot_args[filename]["mid_tick"] = list(ad.uns["cnv"]["chr_pos"].values()) + [ad.obsm["X_cnv"].shape[1]]
-    plot_args[filename]["x_tick_lab"] = list(ad.uns["cnv"]["chr_pos"].keys())
-    plot_args[filename]["x_tick_loc"] = get_mid_ticks(
-        list(ad.uns["cnv"]["chr_pos"].values()) + [ad.obsm["X_cnv"].shape[1]]
-    )
-    plot_args[filename]["chr_pos"] = ad.uns["cnv"]["chr_pos"].values()
-    plot_args[filename]["loss_arrs"] = loss_arrs
-    plot_args[filename]["other_arrs"] = other_arrs
-    plot_args[filename]["loss_seps"] = loss_seps
-    plot_args[filename]["other_seps"] = other_seps
-    plot_args[filename]["blocknums"] = blocknums
+    plot_args["mid_tick"] = list(ad.uns["cnv"]["chr_pos"].values()) + [ad.obsm["X_cnv"].shape[1]]
+    plot_args["x_tick_lab"] = list(ad.uns["cnv"]["chr_pos"].keys())
+    plot_args["x_tick_loc"] = get_mid_ticks(list(ad.uns["cnv"]["chr_pos"].values()) + [ad.obsm["X_cnv"].shape[1]])
+    plot_args["chr_pos"] = ad.uns["cnv"]["chr_pos"].values()
+    plot_args["loss_arrs"] = loss_arrs
+    plot_args["other_arrs"] = other_arrs
+    plot_args["loss_seps"] = loss_seps
+    plot_args["other_seps"] = other_seps
+    plot_args["blocknums"] = blocknums
     return plot_args
