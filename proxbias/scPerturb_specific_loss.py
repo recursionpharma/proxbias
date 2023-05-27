@@ -307,13 +307,11 @@ def generate_save_summary_results(
             tmp["Tested loss direction"] = c.replace("p", "'")
             allres.append(tmp.sort_values("% affected cells", ascending=False))
 
-    allres = pd.concat(allres)
-    allres["Total # cells"] = allres.apply(
-        lambda x: int(x["# affected cells"] / x["% affected cells"] * 100), axis=1
-    )  # type: ignore
+    allres: pd.DataFrame = pd.concat(allres)
+    allres["Total # cells"] = allres.apply(lambda x: int(x["# affected cells"] / x["% affected cells"] * 100), axis=1)
     allres["Telomeric or centromeric"] = allres.apply(
         lambda x: get_telo_centro(x["Chr arm"], x["Tested loss direction"]), axis=1
-    )  # type: ignore
+    )
     allres = allres[
         [
             "Perturbed gene",
@@ -326,15 +324,15 @@ def generate_save_summary_results(
             "% affected cells",
             "Telomeric or centromeric",
         ]
-    ]  # type: ignore
-    allres.to_csv("allres.csv", index=None)  # type: ignore
+    ]
+    allres.to_csv("allres.csv", index=None)
 
     gr_cols = ["Perturbation type", "Dataset", "Tested loss direction"]
     summaryres = (
         allres.groupby(gr_cols)
         .agg({"Telomeric or centromeric": [len, lambda x: sum(x == "telomeric"), lambda x: sum(x == "centromeric")]})
         .reset_index()
-    )  # type: ignore
+    )
     add_cols = [
         "# targets w/ specific loss",
         "# targets w/ loss towards telomere",
@@ -478,7 +476,7 @@ def generate_plot_args(
     for p in perts2check:
         res_p = res[(res.ko_gene == p) & (res.aff_gene == p)]
         direcs = list(perts2check_df[perts2check_df["Perturbed gene"] == p]["Tested loss direction"])
-        loss_cell_inds = sum(
+        loss_cell_inds: List[str] = sum(
             [[ad.obs.index.get_loc(x) for x in literal_eval(res_p[f"loss{d[0]}p_cells"].iloc[0])] for d in direcs],
             [],
         )
