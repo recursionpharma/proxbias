@@ -4,13 +4,16 @@ import wget
 import scanpy
 import numpy as np
 import pandas as pd
-import infercnvpy
 from proxbias import utils
+import infercnvpy
+from scanpy import AnnData
 
 
-def compute_loss_w_specificity(anndat, blocksize, neighborhood_cnt=150, frac_cutoff=0.7, cnv_cutoff=-0.05):
+def compute_loss_w_specificity(
+    anndat: AnnData, blocksize: int, neighborhood_cnt: int = 150, frac_cutoff: float = 0.7, cnv_cutoff: float = -0.05
+) -> pd.DataFrame:
     """
-    Compute loss with specificity based on the provided AnnData object.
+    Compute chromosomal loss with specificity based on the provided AnnData object.
 
     Args:
         anndat (AnnData): AnnData object containing the data.
@@ -96,7 +99,7 @@ def compute_loss_w_specificity(anndat, blocksize, neighborhood_cnt=150, frac_cut
     return loss
 
 
-def get_chromosome_info():
+def get_chromosome_info() -> pd.DataFrame:
     """
     Retrieve chromosome information for genes and return it as a DataFrame.
 
@@ -110,7 +113,9 @@ def get_chromosome_info():
     return pd.DataFrame.from_dict(gene_dict, orient="index").rename(columns={"chrom": "chromosome"})
 
 
-def apply_infercnv_and_save_loss(anndat, filename, blocksize=5, window=100, neigh=150):
+def apply_infercnv_and_save_loss(
+    anndat, filename: str, blocksize: int = 5, window: int = 100, neigh: int = 150
+) -> None:
     """
     Apply infercnv to the provided AnnData object, compute loss with specificity, and save the results to a CSV file.
 
@@ -139,7 +144,7 @@ def apply_infercnv_and_save_loss(anndat, filename, blocksize=5, window=100, neig
     res.to_csv(os.path.join(utils.constants.DATA_DIR, res_filename))
 
 
-def load_and_process_data(filename: AnnData, chromosome_info):
+def load_and_process_data(filename: str, chromosome_info: pd.DataFrame) -> AnnData:
     """
     Load and process AnnData object from the specified file prior to applying `infercnv()`
 
