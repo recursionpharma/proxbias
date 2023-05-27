@@ -307,12 +307,12 @@ def generate_save_summary_results(
             tmp["Tested loss direction"] = c.replace("p", "'")
             allres.append(tmp.sort_values("% affected cells", ascending=False))
 
-    allres: pd.DataFrame = pd.concat(allres)
-    allres["Total # cells"] = allres.apply(lambda x: int(x["# affected cells"] / x["% affected cells"] * 100), axis=1)
-    allres["Telomeric or centromeric"] = allres.apply(
+    allres_d = pd.concat(allres)
+    allres_df["Total # cells"] = allres_df.apply(lambda x: int(x["# affected cells"] / x["% affected cells"] * 100), axis=1)
+    allres_df["Telomeric or centromeric"] = allres_df.apply(
         lambda x: get_telo_centro(x["Chr arm"], x["Tested loss direction"]), axis=1
     )
-    allres = allres[
+    allres_df = allres_df[
         [
             "Perturbed gene",
             "Perturbation type",
@@ -325,11 +325,11 @@ def generate_save_summary_results(
             "Telomeric or centromeric",
         ]
     ]
-    allres.to_csv("allres.csv", index=None)
+    allres_df.to_csv("allres.csv", index=None)
 
     gr_cols = ["Perturbation type", "Dataset", "Tested loss direction"]
     summaryres = (
-        allres.groupby(gr_cols)
+        allres_df.groupby(gr_cols)
         .agg({"Telomeric or centromeric": [len, lambda x: sum(x == "telomeric"), lambda x: sum(x == "centromeric")]})
         .reset_index()
     )
