@@ -33,6 +33,7 @@ dependencies = [
 	"pyarrow",
 	"fastparquet",
 	"infercnvpy",
+	"efaar-benchmarking",
 ]
 
 [project.optional-dependencies]
