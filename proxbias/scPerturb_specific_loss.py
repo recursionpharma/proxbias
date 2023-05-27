@@ -60,7 +60,6 @@ def compute_loss_w_specificity(
         pd.DataFrame: DataFrame containing the computed loss values.
 
     """
-
     avar = anndat.var
     cnvarr = anndat.obsm["X_cnv"].toarray() <= cnv_cutoff
     perturbed_genes = list(set(anndat.obs.gene).intersection(avar.index))
@@ -142,7 +141,6 @@ def get_chromosome_info() -> pd.DataFrame:
             with gene names as the index and "chromosome" as the column name.
 
     """
-
     gene_dict, _, _ = utils.chromosome_info.get_chromosome_info_as_dicts()
     return pd.DataFrame.from_dict(gene_dict, orient="index").rename(columns={"chrom": "chromosome"})
 
@@ -164,7 +162,6 @@ def apply_infercnv_and_save_loss(
         None
 
     """
-
     infercnvpy.tl.infercnv(
         anndat,
         reference_key="perturbation_label",
@@ -192,7 +189,6 @@ def load_and_process_data(filename: str, chromosome_info: pd.DataFrame) -> AnnDa
     Returns:
         AnnData: Processed data.
     """
-
     print(filename)
     source_path = f"https://zenodo.org/record/7416068/files/{filename}.h5ad?download=1"
     destination_path = f"{filename}.h5ad"
@@ -219,11 +215,23 @@ def load_and_process_data(filename: str, chromosome_info: pd.DataFrame) -> AnnDa
         ad.obs["chromosome"] = ad.obs.gene.apply(lambda x: chromosome_info.chromosome.get(x, "")).fillna("")
         ad.obs["perturbation_label"] = ad.obs["chromosome"]
         ad.obs.loc[ad.obs.perturbation == "control", "perturbation_label"] = "control"
-
     return ad[ad.obs.perturbation_label != ""]
 
 
-def make_infercnv_result_file_name(filename: str, blocksize: int, window: int, neigh: int):
+def make_infercnv_result_file_name(filename: str, blocksize: int, window: int, neigh: int) -> str:
+    """
+    Constructs the filename for the infercnv result file using the given filename, blocksize, window,
+    and neigh values. The resulting filename follows the format "{filename}_b{blocksize}_w{window}_n{neigh}.csv".
+
+    Args:
+        filename (str): The base filename.
+        blocksize (int): The blocksize value.
+        window (int): The window value.
+        neigh (int): The neigh value.
+
+    Returns:
+        str: The generated infercnv result filename.
+    """
     return f"{filename}_b{blocksize}_w{window}_n{neigh}.csv"
 
 
@@ -359,7 +367,7 @@ def get_short_filename(filename):
         >>> get_short_filename("TianKampmann2021_CRISPRi")
         'Tian'
         >>> get_short_filename("data_file.csv")
-        Raises Index Error since there are no capital letters
+        Raises IndexError since there are no capital letters
     """
     return findall("[A-Z][^A-Z]*", filename)[0]
 
@@ -383,8 +391,37 @@ def get_mid_ticks(lst: List[int]) -> List[int]:  # assuming that `lst` includes 
     return [(lst[i] - lst[i - 1]) / 2 + lst[i - 1] for i in range(1, len(lst))]
 
 
+def get_cell_count_threshold(filename_short: str) -> int:
+    """
+    Retrieves the cell count threshold based on the given filename short.
+
+    The function returns the cell count threshold based on the provided filename short. The threshold values are defined
+    in a dictionary where the filename short serves as the key and the corresponding threshold as the value.
+
+    Args:
+        filename_short (str): The short filename to retrieve the cell count threshold for.
+
+    Returns:
+        int: The cell count threshold.
+
+    Raises:
+        KeyError: If the provided filename short is not found in the dictionary.
+
+    Examples:
+        >>> threshold = get_cell_count_threshold("Frangieh")
+        >>> print(threshold)
+    """
+
+    return {"Frangieh": 20, "Papalexi": 10}[filename_short]
+
+
 def generate_plot_args(
-    filename: str, allres: pd.DataFrame, blocksize: int = 5, window: int = 100, neigh: int = 150
+    filename: str,
+    allres: pd.DataFrame,
+    chromosome_info: pd.DataFrame,
+    blocksize: int = 5,
+    window: int = 100,
+    neigh: int = 150,
 ) -> dict:
     """
     Generates plot arguments for visualization based on a given filename and processing parameters.
@@ -396,6 +433,7 @@ def generate_plot_args(
     Args:
         filename (str): The name of the file to process.
         allres (pd.DataFrame): The result data frame containing information from the earlier full infercnv run.
+        chromosome_info (pd.DataFrame): DataFrame containing gene chromosome information.
         blocksize (int, optional): The block size parameter for processing. Defaults to 5.
         window (int, optional): The window size parameter for processing. Defaults to 100.
         neigh (int, optional): The neighborhood count parameter for processing. Defaults to 150.
@@ -415,7 +453,7 @@ def generate_plot_args(
     ]
     perts2check = sorted(set(perts2check_df["Perturbed gene"]))
 
-    ad.var = ad.var.rename(columns={"start": "st", "end": "en"}).join(all_genes_bed_HGNC, how="left")
+    ad.var = ad.var.rename(columns={"start": "st", "end": "en"}).join(chromosome_info, how="left")
     if filename_short == "Papalexi":
         ad.obs["gene"] = (
             ad.obs.perturbation.apply(lambda x: x.split("g")[0] if x != "control" else "").fillna("").astype(str)
