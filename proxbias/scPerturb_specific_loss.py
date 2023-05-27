@@ -308,7 +308,9 @@ def generate_save_summary_results(
             allres.append(tmp.sort_values("% affected cells", ascending=False))
 
     allres_d = pd.concat(allres)
-    allres_df["Total # cells"] = allres_df.apply(lambda x: int(x["# affected cells"] / x["% affected cells"] * 100), axis=1)
+    allres_df["Total # cells"] = allres_df.apply(
+        lambda x: int(x["# affected cells"] / x["% affected cells"] * 100), axis=1
+    )
     allres_df["Telomeric or centromeric"] = allres_df.apply(
         lambda x: get_telo_centro(x["Chr arm"], x["Tested loss direction"]), axis=1
     )
