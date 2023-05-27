@@ -110,12 +110,13 @@ def get_chromosome_info():
     return pd.DataFrame.from_dict(gene_dict, orient="index").rename(columns={"chrom": "chromosome"})
 
 
-def apply_infercnv_and_save_loss(anndat, blocksize=5, window=100, neigh=150):
+def apply_infercnv_and_save_loss(anndat, filename, blocksize=5, window=100, neigh=150):
     """
     Apply infercnv to the provided AnnData object, compute loss with specificity, and save the results to a CSV file.
 
     Args:
         anndat (AnnData): AnnData object containing the data.
+        filename (str): Name of the file to use in the result csv filename.
         blocksize (int): Block size for infercnv. Default is 5.
         window (int): Window size for infercnv. Default is 100.
         neigh (int): Number of neighboring blocks to consider. Default is 150.
@@ -134,7 +135,8 @@ def apply_infercnv_and_save_loss(anndat, blocksize=5, window=100, neigh=150):
         exclude_chromosomes=None,
     )
     res = compute_loss_w_specificity(anndat, blocksize, neigh)
-    res.to_csv(os.path.join(utils.constants.DATA_DIR, f"infercnv_{filename}_b{blocksize}_w{window}_n{neigh}.csv"))
+    res_filename = f"infercnv_{filename}_b{blocksize}_w{window}_n{neigh}.csv"
+    res.to_csv(os.path.join(utils.constants.DATA_DIR, res_filename))
 
 
 def load_and_process_data(filename: AnnData, chromosome_info):
