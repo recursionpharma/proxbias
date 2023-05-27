@@ -13,7 +13,7 @@ from typing import List
 from ast import literal_eval
 
 
-def get_telo_centro(arm: str, direction: str) -> str:
+def get_telo_centro(arm: str, direction: str) -> Optional[str]:
     """
     Determines the location of a genomic arm within a chromosome based on the chromosome number and direction.
 
@@ -68,10 +68,10 @@ def compute_loss_w_specificity(
     list_aff, list_ko = zip(*itertools.product(perturbed_genes, ko_genes_to_look_at))
     loss = pd.DataFrame({"ko_gene": list_ko, "aff_gene": list_aff})
 
-    loss_5p_cells = [[]] * len(loss)
+    loss_5p_cells: List[List[str]] = [[]] * len(loss)
     loss_5p_ko_cell_count = np.empty(len(loss))
     loss_5p_ko_cell_frac = np.empty(len(loss))
-    loss_3p_cells = [[]] * len(loss)
+    loss_3p_cells: List[List[str]] = [[]] * len(loss)
     loss_3p_ko_cell_count = np.empty(len(loss))
     loss_3p_ko_cell_frac = np.empty(len(loss))
     i5p = 0
@@ -172,7 +172,7 @@ def apply_infercnv_and_save_loss(
     )
     res = compute_loss_w_specificity(anndat, blocksize, neigh)
     res.to_csv(
-        os.path.join(utils.constants.DATA_DIR, make_infercnv_result_file_name(filename, blocksize, window, neigh))
+        os.path.join(str(utils.constants.DATA_DIR), make_infercnv_result_file_name(filename, blocksize, window, neigh))
     )
 
 
@@ -449,7 +449,7 @@ def generate_plot_args(
     ad = scanpy.read_h5ad(f"{filename}.h5ad")
     filename_short = get_short_filename(filename)
     perts2check_df = allres[
-        (allres["Dataset"] == filename_short) & (allres["# affected cells"] >= cell_count_thrs[filename_short])
+        (allres["Dataset"] == filename_short) & (allres["# affected cells"] >= get_cell_count_threshold(filename_short))
     ]
     perts2check = sorted(set(perts2check_df["Perturbed gene"]))
 
@@ -467,10 +467,10 @@ def generate_plot_args(
     )
 
     res = pd.read_csv(make_infercnv_result_file_name(filename, blocksize, window, neigh), index_col=0)
-    loss_arrs = []
-    other_arrs = []
-    loss_seps = []
-    other_seps = []
+    loss_arrs: List[float] = []
+    other_arrs: List[float] = []
+    loss_seps: List[int] = []
+    other_seps: List[int] = []
     blocknums = []
     for p in perts2check:
         res_p = res[(res.ko_gene == p) & (res.aff_gene == p)]
