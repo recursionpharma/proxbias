@@ -375,10 +375,11 @@ def get_short_filename(filename):
     return findall("[A-Z][^A-Z]*", filename)[0]
 
 
-def get_mid_ticks(lst: List[int]) -> List[int]:  # assuming that `lst` includes 0 at the beginning!!
+def get_mid_ticks(lst: List[int]) -> List[float]:
     """
     Takes a list of values and calculates the middle ticks by averaging each value with its preceding
     value and returns a list of the calculated middle ticks.
+    Assumes that `lst` includes 0 as the first item.
 
     Args:
         lst (List[int]): A list of values.
