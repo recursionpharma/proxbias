@@ -307,7 +307,7 @@ def generate_save_summary_results(
             tmp["Tested loss direction"] = c.replace("p", "'")
             allres.append(tmp.sort_values("% affected cells", ascending=False))
 
-    allres_d = pd.concat(allres)
+    allres_df = pd.concat(allres)
     allres_df["Total # cells"] = allres_df.apply(
         lambda x: int(x["# affected cells"] / x["% affected cells"] * 100), axis=1
     )
