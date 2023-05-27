@@ -9,6 +9,36 @@ import infercnvpy
 from scanpy import AnnData
 
 
+def get_telo_centro(arm: str, direction: str) -> str:
+    """
+    Determines the location of a genomic arm within a chromosome based on the chromosome number and direction.
+
+    Args:
+        arm (str): The genomic arm represented by the chromosome number followed by 'p' or 'q' (e.g., '1p', '2q', 'Xp').
+        direction (str): The direction of the genomic arm (e.g., '5prime', '3prime').
+
+    Returns:
+        str: The location of the genomic arm within the chromosome, which can be either 'centromeric' or 'telomeric'.
+
+    Raises:
+        None
+
+    Examples:
+        >>> get_telo_centro('1p', '3prime')
+        'centromeric'
+        >>> get_telo_centro('2q', '5prime')
+        'centromeric'
+        >>> get_telo_centro('1p', '5prime')
+        'telomeric'
+        >>> get_telo_centro('Xq', '3prime')
+        'telomeric'
+    """
+    if arm[-1] == 'p':
+        return 'centromeric' if '3' in direction else 'telomeric'
+    if arm[-1] == 'q':
+        return 'telomeric' if '3' in direction else 'centromeric'
+
+
 def compute_loss_w_specificity(
     anndat: AnnData, blocksize: int, neighborhood_cnt: int = 150, frac_cutoff: float = 0.7, cnv_cutoff: float = -0.05
 ) -> pd.DataFrame:
