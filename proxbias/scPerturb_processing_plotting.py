@@ -149,8 +149,7 @@ def apply_infercnv_and_save_loss_info(filename: str, blocksize: int = 5, window:
             step=blocksize,
             exclude_chromosomes=None,
         )
-        res = _compute_chromosomal_loss(anndat, blocksize, neigh)
-        res.to_csv(res_path, index=None)
+        _compute_chromosomal_loss(anndat, blocksize, neigh).to_csv(res_path, index=False)
 
 
 def _load_and_process_data(filename: str, chromosome_info: Optional[pd.DataFrame] = None) -> AnnData:
@@ -391,7 +390,7 @@ def generate_specific_loss_and_summary_tables(
             "Telomeric or centromeric",
         ]
     ]
-    allres_df.to_csv(_get_specific_loss_file_path(), index=None)
+    allres_df.to_csv(_get_specific_loss_file_path(), index=False)
 
     gr_cols = ["Perturbation type", "Dataset", "Tested loss direction"]
     summaryres_df = (
@@ -410,7 +409,7 @@ def generate_specific_loss_and_summary_tables(
         lambda r: round((r["# targets w/ specific loss"] / r["Total # tested targets"]) * 100, 1), axis=1
     )
     summaryres_df = summaryres_df[gr_cols + ["% targets w/ specific loss", "Total # tested targets"] + add_cols]
-    summaryres_df.to_csv(_get_specific_loss_summary_file_path(), index=None)
+    summaryres_df.to_csv(_get_specific_loss_summary_file_path(), index=False)
 
 
 def _get_mid_ticks(lst: List[int]) -> List[float]:
