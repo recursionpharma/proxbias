@@ -16,37 +16,6 @@ import seaborn as sns
 from skimage.measure import block_reduce
 
 
-def _get_telo_centro(arm: str, direction: str) -> Optional[str]:
-    """
-    Determines the location of a genomic arm within a chromosome based on the chromosome number and direction.
-
-    Args:
-        arm (str): The genomic arm represented by the chromosome number followed by 'p' or 'q' (e.g., '1p', '2q', 'Xp').
-        direction (str): The direction of the genomic arm (e.g., '5prime', '3prime').
-
-    Returns:
-        str: The location of the genomic arm within the chromosome, which can be either 'centromeric' or 'telomeric'.
-
-    Raises:
-        None
-
-    Examples:
-        >>> _get_telo_centro('1p', '3prime')
-        'centromeric'
-        >>> _get_telo_centro('2q', '5prime')
-        'centromeric'
-        >>> _get_telo_centro('1p', '5prime')
-        'telomeric'
-        >>> _get_telo_centro('Xq', '3prime')
-        'telomeric'
-    """
-    if arm[-1] == "p":
-        return "centromeric" if "3" in direction else "telomeric"
-    if arm[-1] == "q":
-        return "telomeric" if "3" in direction else "centromeric"
-    return None
-
-
 def _compute_chromosomal_loss(
     anndat: AnnData, blocksize: int, neighborhood_cnt: int = 150, frac_cutoff: float = 0.7, cnv_cutoff: float = -0.05
 ) -> pd.DataFrame:
@@ -149,16 +118,16 @@ def _get_chromosome_info() -> pd.DataFrame:
     return pd.DataFrame.from_dict(gene_dict, orient="index").rename(columns={"chrom": "chromosome"})
 
 
-def apply_infercnv_and_save_losses(filename: str, blocksize: int = 5, window: int = 100, neigh: int = 150) -> str:
+def apply_infercnv_and_save_loss_info(filename: str, blocksize: int = 5, window: int = 100, neigh: int = 150) -> None:
     """
-    Apply infercnv and compute loss with specificity on the given data file, and save the results.
+    Apply infercnv and compute loss info on the given data file, and save the results.
     The function loads and processes the data file using the _load_and_process_data() function,
     applies infercnv analysis with the specified parameters, computes loss with specificity,
     and saves the results to a CSV file.
     The result file is saved in the directory specified by utils.constants.DATA_DIR with a name
-    generated using the _make_infercnv_result_file_name() function, which incorporates the original
+    generated using the _get_infercnv_result_file() function, which incorporates the original
     filename, blocksize, window, and neigh values. If the result file already exists, the function
-    skips the infercnv and loss computation steps.
+    skips the infercnv and loss computation steps since this is a computationally expensive process
 
     Args:
         filename (str): Name of the file to process.
@@ -167,11 +136,9 @@ def apply_infercnv_and_save_losses(filename: str, blocksize: int = 5, window: in
         neigh (int, optional): Number of nearest neighbors for specificity computation. Default is 150.
 
     Returns:
-        Result file path.
+        None
     """
-    res_path = os.path.join(
-        str(utils.constants.DATA_DIR), _make_infercnv_result_file_name(filename, blocksize, window, neigh)
-    )
+    res_path = _get_infercnv_result_file_path(filename, blocksize, window, neigh)
     if not os.path.exists(res_path):
         anndat = _load_and_process_data(filename)
         infercnvpy.tl.infercnv(
@@ -182,9 +149,7 @@ def apply_infercnv_and_save_losses(filename: str, blocksize: int = 5, window: in
             step=blocksize,
             exclude_chromosomes=None,
         )
-        res = _compute_chromosomal_loss(anndat, blocksize, neigh)
-        res.to_csv(res_path)
-    return res_path
+        _compute_chromosomal_loss(anndat, blocksize, neigh).to_csv(res_path, index=None)
 
 
 def _load_and_process_data(filename: str, chromosome_info: pd.DataFrame = None) -> AnnData:
@@ -235,10 +200,42 @@ def _load_and_process_data(filename: str, chromosome_info: pd.DataFrame = None) 
     return ad[ad.obs.perturbation_label != ""]
 
 
-def _make_infercnv_result_file_name(filename: str, blocksize: int, window: int, neigh: int) -> str:
+def _get_telo_centro(arm: str, direction: str) -> Optional[str]:
     """
-    Constructs the filename for the infercnv result file using the given filename, blocksize, window,
-    and neigh values. The resulting filename follows the format "{filename}_b{blocksize}_w{window}_n{neigh}.csv".
+    Determines the location of a genomic arm within a chromosome based on the chromosome number and direction.
+
+    Args:
+        arm (str): The genomic arm represented by the chromosome number followed by 'p' or 'q' (e.g., '1p', '2q', 'Xp').
+        direction (str): The direction of the genomic arm (e.g., '5prime', '3prime').
+
+    Returns:
+        str: The location of the genomic arm within the chromosome, which can be either 'centromeric' or 'telomeric'.
+
+    Raises:
+        None
+
+    Examples:
+        >>> _get_telo_centro('1p', '3prime')
+        'centromeric'
+        >>> _get_telo_centro('2q', '5prime')
+        'centromeric'
+        >>> _get_telo_centro('1p', '5prime')
+        'telomeric'
+        >>> _get_telo_centro('Xq', '3prime')
+        'telomeric'
+    """
+    if arm[-1] == "p":
+        return "centromeric" if "3" in direction else "telomeric"
+    if arm[-1] == "q":
+        return "telomeric" if "3" in direction else "centromeric"
+    return None
+
+
+def _get_infercnv_result_file_path(filename: str, blocksize: int, window: int, neigh: int) -> str:
+    """
+    Constructs the file path for the infercnv result file using the given filename, blocksize, window,
+    and neigh values. The resulting filename follows the format "{filename}_b{blocksize}_w{window}_n{neigh}.csv"
+    under DATA_DIR.
 
     Args:
         filename (str): The base filename.
@@ -247,35 +244,90 @@ def _make_infercnv_result_file_name(filename: str, blocksize: int, window: int, 
         neigh (int): The neigh value.
 
     Returns:
-        str: The generated infercnv result filename.
+        str: The generated infercnv result file path.
     """
-    return f"{filename}_b{blocksize}_w{window}_n{neigh}.csv"
+    return os.path.join(str(utils.constants.DATA_DIR), f"{filename}_b{blocksize}_w{window}_n{neigh}.csv")
 
 
-def generate_save_loss_info(filenames: List[str], zscore_cutoff: float = 3.0) -> None:
+def _get_specific_loss_file_path() -> str:
     """
-    Generates and saves summary chromosomal loss results from a list of multiple infercnv result files.
-    The function reads CSV files based on the filenames and performs data processing and aggregation to generate
-    summary results. The results are saved in CSV format.
+    Returns the file path for the specific loss information file.
+
+    Returns:
+        str: The file path for the specific loss information file.
+    """
+    return os.path.join(str(utils.constants.DATA_DIR), "allres.csv")
+
+
+def _get_specific_loss_summary_file_path() -> str:
+    """
+    Returns the file path for the specific loss summary table file.
+
+    Returns:
+        str: The file path for the specific loss summary table file.
+    """
+    return os.path.join(str(utils.constants.DATA_DIR), "summaryres.csv")
+
+
+def _get_short_filename(filename: str) -> str:
+    """
+    Retrieves the short filename from a given filename by extracting the sequence starting with a capital letter
+    until the next capital letter is encountered.
+
+    Args:
+        filename (str): The original filename from which the short filename will be extracted.
+
+    Returns:
+        str: The short filename containing the first sequence of uppercase letters found in the given filename,
+             or an empty string if no uppercase letters are present.
+
+    Raises:
+        IndexError: If no uppercase letters are found in the given filename.
+
+    Examples:
+        >>> _get_short_filename("PapalexiSatija2021_eccite_RNA")
+        'Papalexi'
+        >>> _get_short_filename("TianKampmann2021_CRISPRi")
+        'Tian'
+        >>> _get_short_filename("data_file.csv")
+        Raises IndexError since there are no capital letters
+    """
+    return findall("[A-Z][^A-Z]*", filename)[0]
+
+
+def generate_specific_loss_and_summary_tables(
+    filenames: List[str], blocksize: int = 5, window: int = 100, neigh: int = 150, zscore_cutoff: float = 3.0
+) -> None:
+    """
+    Generates and saves summary chromosomal loss results based on a list of scPerturb AnnData files.
+    Filename options to include in `filenames` list are: "FrangiehIzar2021_RNA",
+    "PapalexiSatija2021_eccite_RNA", "ReplogleWeissman2022_rpe1", "TianKampmann2021_CRISPRi",
+    "AdamsonWeissman2016_GSM2406681_10X010".
+
+    The function performs infercnv on the data files, identifies a list of genes that are exhibiting loss
+    specifically around the perturbation site, amd aggregates and summarizes the loss information as presented
+    in the paper. The results are saved in CSV format.
 
     Args:
         filenames (List[str]): A list of filenames to process and generate summary results for.
-        zscore_cutoff (float, optional): The z-score cutoff value for filtering specific loss. Defaults to 3.0.
+        blocksize (int, optional): Block size for infercnv analysis. Defaults to 5.
+        window (int, optional): Window size for infercnv analysis. Defaults to 100.
+        neigh (int, optional): Neighbor parameter for infercnv analysis. Defaults to 150.
+        zscore_cutoff (float, optional): The loss z-score cutoff value for filtering specific loss. Defaults to 3.0.
 
     Returns:
         None
 
-    Raises:
-        FileNotFoundError: If the CSV file for a given filename is not found.
-
     Example usage:
         >>> filenames = ["PapalexiSatija2021_eccite_RNA", "TianKampmann2021_CRISPRi"]
-        >>> generate_save_loss_info(filenames)
+        >>> generate_specific_loss_and_summary_tables(filenames)
     """
 
+    for filename in filenames:
+        apply_infercnv_and_save_loss_info(filename, blocksize, window, neigh)
     spec_genes_dict = {}
     for filename in filenames:
-        res = pd.read_csv(apply_infercnv_and_save_losses(filename), index_col=0)
+        res = pd.read_csv(_get_infercnv_result_file_path(filename, blocksize, window, neigh))
         for c in ["3p", "5p"]:
             col = f"loss{c}_cellfrac"
             col2 = f"loss{c}_cellcount"
@@ -294,7 +346,7 @@ def generate_save_loss_info(filenames: List[str], zscore_cutoff: float = 3.0) ->
     tested_gene_count_dict = {}
     allres = []
     for filename in filenames:
-        res = pd.read_csv(apply_infercnv_and_save_losses(filename), index_col=0)
+        res = pd.read_csv(_get_infercnv_result_file_path(filename, blocksize, window, neigh))
         filename_short = _get_short_filename(filename)
         tested_gene_count_dict[filename_short] = len(res.aff_gene.unique())
         for c in ["3p", "5p"]:
@@ -338,7 +390,7 @@ def generate_save_loss_info(filenames: List[str], zscore_cutoff: float = 3.0) ->
             "Telomeric or centromeric",
         ]
     ]
-    allres_df.to_csv(os.path.join(str(utils.constants.DATA_DIR), "allres.csv"), index=None)
+    allres_df.to_csv(_get_specific_loss_file_path(), index=None)
 
     gr_cols = ["Perturbation type", "Dataset", "Tested loss direction"]
     summaryres_df = (
@@ -357,33 +409,7 @@ def generate_save_loss_info(filenames: List[str], zscore_cutoff: float = 3.0) ->
         lambda r: round((r["# targets w/ specific loss"] / r["Total # tested targets"]) * 100, 1), axis=1
     )
     summaryres_df = summaryres_df[gr_cols + ["% targets w/ specific loss", "Total # tested targets"] + add_cols]
-    summaryres_df.to_csv(os.path.join(str(utils.constants.DATA_DIR), "summaryres.csv"), index=None)
-
-
-def _get_short_filename(filename: str) -> str:
-    """
-    Retrieves the short filename from a given filename by extracting the sequence starting with a capital letter
-    until the next capital letter is encountered.
-
-    Args:
-        filename (str): The original filename from which the short filename will be extracted.
-
-    Returns:
-        str: The short filename containing the first sequence of uppercase letters found in the given filename,
-             or an empty string if no uppercase letters are present.
-
-    Raises:
-        IndexError: If no uppercase letters are found in the given filename.
-
-    Examples:
-        >>> _get_short_filename("PapalexiSatija2021_eccite_RNA")
-        'Papalexi'
-        >>> _get_short_filename("TianKampmann2021_CRISPRi")
-        'Tian'
-        >>> _get_short_filename("data_file.csv")
-        Raises IndexError since there are no capital letters
-    """
-    return findall("[A-Z][^A-Z]*", filename)[0]
+    summaryres_df.to_csv(_get_specific_loss_summary_file_path(), index=None)
 
 
 def _get_mid_ticks(lst: List[int]) -> List[float]:
@@ -420,17 +446,41 @@ def _get_cell_count_threshold(filename_short: str) -> int:
         int: The cell count threshold.
 
     Raises:
-        KeyError: If the provided short filename is not found in the dictionary.
+        KeyError: If the provided short filename is not found in the predefined mapping.
 
     Examples:
         >>> threshold = _get_cell_count_threshold("Frangieh")
         >>> print(threshold)
+        20
     """
-
     return {"Frangieh": 20, "Papalexi": 10}[filename_short]
 
 
-def plot_losses(
+def _get_crunch_size(filename_short: str) -> int:
+    """
+    Returns the crunch size for a given filename.
+
+    The crunch size is a parameter used to adjust the file size of the generated plot.
+    The value depends on the filename and is retrieved from a predefined mapping.
+
+    Args:
+        filename_short (str): The short filename for which to retrieve the crunch size.
+
+    Returns:
+        int: The crunch size for the given filename.
+
+    Raises:
+        KeyError: If the filename_short is not found in the predefined mapping.
+
+    Example:
+        >>> crunch_size = _get_crunch_size("Frangieh")
+        >>> print(crunch_size)
+        30
+    """
+    return {"Frangieh": 30, "Papalexi": 10}[filename_short]
+
+
+def plot_loss_for_selected_genes(
     filenames: List[str],
     chromosome_info: pd.DataFrame = None,
     blocksize: int = 5,
@@ -469,15 +519,14 @@ def plot_losses(
         to the original filenames and displayed.
 
         The function depends on several helper functions, such as _get_chromosome_info(),
-        _get_short_filename(), _get_cell_count_threshold(), _make_infercnv_result_file_name(),
-        and _get_mid_ticks().
+        _get_short_filename(), _get_infercnv_result_file(), and _get_mid_ticks().
 
         If any of the required files or directories are missing, or if the filenames
         or perturbed genes are not found, the function may raise FileNotFound or KeyError.
     """
     if chromosome_info is None:
         chromosome_info = _get_chromosome_info()
-    allres = pd.read_csv(os.path.join(str(utils.constants.DATA_DIR), "allres.csv"))
+    allres = pd.read_csv(_get_specific_loss_file_path())
     sns.set(font_scale=1.7)
     plt.rcParams["svg.fonttype"] = "none"
     for filename in filenames:
@@ -506,7 +555,7 @@ def plot_losses(
             step=blocksize,
             exclude_chromosomes=None,
         )
-        res = pd.read_csv(_make_infercnv_result_file_name(filename, blocksize, window, neigh), index_col=0)
+        res = pd.read_csv(_get_infercnv_result_file_path(filename, blocksize, window, neigh), index_col=0)
         loss_arrs: List[float] = []
         other_arrs: List[float] = []
         loss_seps: List[int] = []
@@ -536,7 +585,7 @@ def plot_losses(
             loss_seps.append(len(loss_cell_inds) if len(loss_seps) == 0 else len(loss_cell_inds) + loss_seps[-1])
             other_seps.append(len(other_cell_inds) if len(other_seps) == 0 else len(other_cell_inds) + other_seps[-1])
 
-        crunch = 10 if filename == "PapalexiSatija2021_eccite_RNA" else 30  # Set to get the file size below 25Mb
+        crunch = _get_crunch_size(filename_short)
         plt.figure(figsize=[20, int(loss_seps[-1] / 15)])
         tmp = block_reduce(loss_arrs, (1, crunch), np.mean)
         ax = sns.heatmap(
