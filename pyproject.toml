@@ -35,6 +35,7 @@ dependencies = [
 	"fastparquet",
 	"scanpy",
 	"infercnvpy",
+	"wget",
 	"efaar-benchmarking",
 ]
 

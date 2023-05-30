@@ -30,7 +30,7 @@ botocore==1.29.76
     # via aiobotocore
 build==0.10.0
     # via pip-tools
-cachetools==5.3.0
+cachetools==5.3.1
     # via tox
 cfgv==3.3.1
     # via pre-commit
@@ -49,7 +49,7 @@ colorama==0.4.6
     #   tox
 contourpy==1.0.7
     # via matplotlib
-coverage[toml]==7.2.6
+coverage[toml]==7.2.7
     # via
     #   proxbias (pyproject.toml)
     #   pytest-cov
@@ -105,7 +105,7 @@ idna==3.4
     # via yarl
 igraph==0.10.4
     # via leidenalg
-imageio==2.29.0
+imageio==2.30.0
     # via scikit-image
 importlib-resources==5.12.0
     # via matplotlib
@@ -210,7 +210,7 @@ packaging==23.1
     #   statsmodels
     #   tox
     #   validate-pyproject
-pandas==2.0.1
+pandas==2.0.2
     # via
     #   anndata
     #   efaar-benchmarking
@@ -251,7 +251,7 @@ pluggy==1.0.0
     # via
     #   pytest
     #   tox
-polars==0.17.15
+polars==0.18.0
     # via gtfparse
 pre-commit==3.3.2
     # via proxbias (pyproject.toml)
@@ -378,7 +378,7 @@ tomli==2.0.1
     #   pytest
     #   tox
     #   validate-pyproject
-tox==4.5.1
+tox==4.5.2
     # via proxbias (pyproject.toml)
 tqdm==4.63.1
     # via
@@ -414,6 +414,8 @@ virtualenv==20.23.0
     #   tox
 wcwidth==0.2.6
     # via prompt-toolkit
+wget==3.2
+    # via proxbias (pyproject.toml)
 wheel==0.40.0
     # via pip-tools
 wrapt==1.15.0

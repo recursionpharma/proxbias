@@ -60,7 +60,7 @@ idna==3.4
     # via yarl
 igraph==0.10.4
     # via leidenalg
-imageio==2.29.0
+imageio==2.30.0
     # via scikit-image
 importlib-resources==5.12.0
     # via matplotlib
@@ -141,7 +141,7 @@ packaging==23.1
     #   scanpy
     #   scikit-image
     #   statsmodels
-pandas==2.0.1
+pandas==2.0.2
     # via
     #   anndata
     #   efaar-benchmarking
@@ -167,7 +167,7 @@ pillow==9.5.0
     #   imageio
     #   matplotlib
     #   scikit-image
-polars==0.17.15
+polars==0.18.0
     # via gtfparse
 prompt-toolkit==3.0.38
     # via ipython
@@ -268,6 +268,8 @@ urllib3==1.26.16
     # via botocore
 wcwidth==0.2.6
     # via prompt-toolkit
+wget==3.2
+    # via proxbias (pyproject.toml)
 wrapt==1.15.0
     # via aiobotocore
 yarl==1.9.2
