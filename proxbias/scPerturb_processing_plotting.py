@@ -11,6 +11,9 @@ from scanpy import AnnData
 from scipy.stats import zscore
 from typing import List, Optional
 from ast import literal_eval
+import matplotlib.pyplot as plt
+import seaborn as sns
+from skimage.measure import block_reduce
 
 
 def _get_telo_centro(arm: str, direction: str) -> Optional[str]:
@@ -440,8 +443,8 @@ def generate_plot_args(
     for visualization of the chromosomal loss. The resulting plot arguments are returned as a dictionary.
     Note that although this functions reads the chromosomal loss from the `allres` parameter, we rerun infercnvpy
     for the subset of genes that are in allres.csv in order to retrieve the actual infercnv values for the visualization.
-    Also note that this function requires _apply_infercnv_and_save_loss(filename) to be called prior so that we have summary result files from which we
-    pull the genes to rerun infercnv on and plot.
+    Also note that this function requires _apply_infercnv_and_save_loss(filename) to be called prior so that we have
+    summary result files from which we pull the genes to rerun infercnv on and plot.
 
     Args:
         filename (str): The name of the file to process.
@@ -536,7 +539,7 @@ def plot_losses(filenames):
         loss_seps_tmp = [0] + p_args["loss_seps"]
         ax.set_yticks(_get_mid_ticks(loss_seps_tmp))
         ax.set_xticklabels(p_args["x_tick_lab"])
-        ax.set_yticklabels(perts2check_d[filename])
+        ax.set_yticklabels(perts2check_df[filename])
         ax.hlines(loss_seps_tmp, *ax.get_xlim())
         for i in range(len(p_args["blocknums"])):
             ax.vlines(
