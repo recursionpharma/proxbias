@@ -149,10 +149,11 @@ def apply_infercnv_and_save_loss_info(filename: str, blocksize: int = 5, window:
             step=blocksize,
             exclude_chromosomes=None,
         )
-        _compute_chromosomal_loss(anndat, blocksize, neigh).to_csv(res_path, index=None)
+        res = _compute_chromosomal_loss(anndat, blocksize, neigh)
+        res.to_csv(res_path, index=None)
 
 
-def _load_and_process_data(filename: str, chromosome_info: pd.DataFrame = None) -> AnnData:
+def _load_and_process_data(filename: str, chromosome_info: Optional[pd.DataFrame] = None) -> AnnData:
     """
     Load and process the specified file prior to applying `infercnv()`
     The result of the processing is an AnnData object with a 'perturbation_label'
@@ -482,7 +483,7 @@ def _get_crunch_size(filename_short: str) -> int:
 
 def plot_loss_for_selected_genes(
     filenames: List[str],
-    chromosome_info: pd.DataFrame = None,
+    chromosome_info: Optional[pd.DataFrame] = None,
     blocksize: int = 5,
     window: int = 100,
     neigh: int = 150,
