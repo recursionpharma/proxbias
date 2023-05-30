@@ -8,7 +8,6 @@ from statsmodels.stats.nonparametric import rank_compare_2indep
 from sklearn.utils import Bunch
 
 from efaar_benchmarking.utils import (
-    compute_pairwise_metrics,
     generate_null_cossims,
     generate_query_cossims,
     get_benchmark_data,
@@ -331,7 +330,7 @@ def _compute_recall(null_cossims, query_cossims, pct_thresholds) -> dict:
     return sum((percentiles <= np.min(pct_thresholds)) | (percentiles >= np.max(pct_thresholds))) / len(percentiles)
 
 
-def compute_within_cross_pairwise_metrics(
+def compute_within_cross_arm_pairwise_metrics(
     data: Bunch,
     pert_label_col: str = "gene",
     pct_thresholds: list = [0.05, 0.95],
