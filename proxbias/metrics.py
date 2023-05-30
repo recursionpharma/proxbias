@@ -364,6 +364,7 @@ def compute_within_cross_arm_pairwise_metrics(
 
         gt_data["entity1_chrom"] = gt_data.entity1.apply(lambda x: gene_dict[x]["arm"] if x in gene_dict else "no info")
         gt_data["entity2_chrom"] = gt_data.entity2.apply(lambda x: gene_dict[x]["arm"] if x in gene_dict else "no info")
+        gt_data = gt_data.query("entity1_chrom != 'no info' and entity2_chrom != 'no info'")
         df_gg_null = generate_null_cossims(
             feats,
             feats,
@@ -373,8 +374,8 @@ def compute_within_cross_arm_pairwise_metrics(
             n_entity2=N_NULL_SAMPLES,
         )
 
-        within_gt_subset = gt_data.query(f"entity1_chrom == entity2_chrom")
-        between_gt_subset = gt_data.query(f"entity1_chrom != entity2_chrom")
+        within_gt_subset = gt_data.query("entity1_chrom == entity2_chrom")
+        between_gt_subset = gt_data.query("entity1_chrom != entity2_chrom")
 
         df_gg_within = generate_query_cossims(feats, feats, within_gt_subset)
         df_gg_between = generate_query_cossims(feats, feats, between_gt_subset)
