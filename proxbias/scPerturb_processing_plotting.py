@@ -429,8 +429,7 @@ def _get_cell_count_threshold(filename_short: str) -> int:
 
 def generate_plot_args(
     filename: str,
-    allres: pd.DataFrame,
-    chromosome_info: pd.DataFrame,
+    chromosome_info: pd.DataFrame = None,
     blocksize: int = 5,
     window: int = 100,
     neigh: int = 150,
@@ -440,14 +439,13 @@ def generate_plot_args(
     The function reads an H5AD file based on the filename, performs data processing, and extracts plot arguments
     for visualization of the chromosomal loss. The resulting plot arguments are returned as a dictionary.
     Note that although this functions reads the chromosomal loss from the `allres` parameter, we rerun infercnvpy
-    for the subset of genes that are in `allres` in order to retrieve the actual infercnv values for the visualization.
+    for the subset of genes that are in allres.csv in order to retrieve the actual infercnv values for the visualization.
     Also note that this function requires _apply_infercnv_and_save_loss(filename) to be called prior so that we have summary result files from which we
     pull the genes to rerun infercnv on and plot.
 
     Args:
         filename (str): The name of the file to process.
-        allres (pd.DataFrame): The result data frame containing information from the earlier full infercnv run.
-        chromosome_info (pd.DataFrame): DataFrame containing gene chromosome information.
+        chromosome_info (pd.DataFrame, optional): DataFrame containing gene chromosome information.
         blocksize (int, optional): The block size parameter for processing. Defaults to 5.
         window (int, optional): The window size parameter for processing. Defaults to 100.
         neigh (int, optional): The neighborhood count parameter for processing. Defaults to 150.
@@ -456,9 +454,11 @@ def generate_plot_args(
         dict: A dictionary containing the plot arguments for visualization.
 
     Raises:
-        FileNotFoundError: If the H5AD file for the given filename is not found.
+        FileNotFoundError: If the H5AD file for the given filename or allres.csv is not found.
     """
-
+    if chromosome_info is None:
+        chromosome_info = _get_chromosome_info()
+    allres = pd.read_csv(os.path.join(str(utils.constants.DATA_DIR), "allres.csv"))
     plot_args = {}
     ad = scanpy.read_h5ad(os.path.join(str(utils.constants.DATA_DIR), f"{filename}.h5ad"))
     filename_short = _get_short_filename(filename)
@@ -511,9 +511,7 @@ def generate_plot_args(
         loss_seps.append(len(loss_cell_inds) if len(loss_seps) == 0 else len(loss_cell_inds) + loss_seps[-1])
         other_seps.append(len(other_cell_inds) if len(other_seps) == 0 else len(other_cell_inds) + other_seps[-1])
 
-    plot_args["mid_tick"] = list(ad.uns["cnv"]["chr_pos"].values()) + [ad.obsm["X_cnv"].shape[1]]
     plot_args["x_tick_lab"] = list(ad.uns["cnv"]["chr_pos"].keys())
-    plot_args["x_tick_loc"] = _get_mid_ticks(list(ad.uns["cnv"]["chr_pos"].values()) + [ad.obsm["X_cnv"].shape[1]])
     plot_args["chr_pos"] = ad.uns["cnv"]["chr_pos"].values()
     plot_args["loss_arrs"] = loss_arrs
     plot_args["other_arrs"] = other_arrs
@@ -521,3 +519,31 @@ def generate_plot_args(
     plot_args["other_seps"] = other_seps
     plot_args["blocknums"] = blocknums
     return plot_args
+
+
+def plot_losses(filenames):
+    sns.set(font_scale=1.7)
+    plt.rcParams["svg.fonttype"] = "none"
+    for filename in filenames:
+        p_args = generate_plot_args(filename)
+        crunch = 10 if filename == "PapalexiSatija2021_eccite_RNA" else 30  # Set to get the file size below 25Mb
+        plt.figure(figsize=[20, int(p_args["loss_seps"][-1] / 15)])
+        tmp = block_reduce(p_args["loss_arrs"], (1, crunch), np.mean)
+        ax = sns.heatmap(
+            tmp, cmap="seismic", center=0, cbar_kws=dict(use_gridspec=False, location="top", shrink=0.5, pad=0.01)
+        )
+        ax.set_xticks([x / crunch for x in p_args["x_tick_loc"]])
+        loss_seps_tmp = [0] + p_args["loss_seps"]
+        ax.set_yticks(_get_mid_ticks(loss_seps_tmp))
+        ax.set_xticklabels(p_args["x_tick_lab"])
+        ax.set_yticklabels(perts2check_d[filename])
+        ax.hlines(loss_seps_tmp, *ax.get_xlim())
+        for i in range(len(p_args["blocknums"])):
+            ax.vlines(
+                p_args["blocknums"][i] / crunch, loss_seps_tmp[i], loss_seps_tmp[i + 1], color="lime", linewidth=3
+            )
+        for j in p_args["chr_pos"]:
+            ax.vlines(j / crunch, *ax.get_ylim())
+        plt.gcf().set_facecolor("white")
+        plt.savefig(f"{filename}.svg", format="svg", bbox_inches="tight")
+        plt.show()
