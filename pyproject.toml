@@ -23,6 +23,7 @@ dynamic = [
 ]
 
 dependencies = [
+	"numpy",
 	"pandas",
 	"s3fs",
 	"scipy",
@@ -32,6 +33,9 @@ dependencies = [
 	"scikit-image",
 	"pyarrow",
 	"fastparquet",
+	"scanpy",
+	"infercnvpy",
+	"wget",
 	"efaar-benchmarking",
 ]
 
