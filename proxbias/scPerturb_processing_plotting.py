@@ -493,6 +493,9 @@ def plot_loss_for_selected_genes(
     Heatmaps are generated to visualize the CNV values and specific block numbers are marked on the heatmaps.
     The resulting plots are saved as SVG files with filenames corresponding to the original filenames and displayed.
 
+    The function depends on several helper functions, such as _get_chromosome_info(),  _get_short_filename(),
+    _get_infercnv_result_file(), and _get_mid_ticks().
+
     Args:
         filenames (List[str]): List of filenames to process.
         chromosome_info (pd.DataFrame, optional): DataFrame containing chromosome information. Defaults to None.
@@ -503,11 +506,8 @@ def plot_loss_for_selected_genes(
     Returns:
         None
 
-    Note:
-        The function depends on several helper functions, such as _get_chromosome_info(),
-        _get_short_filename(), _get_infercnv_result_file(), and _get_mid_ticks().
-
-        If any of the required files or directories are missing, or if the filenames are not found, the function may raise FileNotFound or KeyError.
+    Raises:
+        FileNotFound or KeyError
     """
     if chromosome_info is None:
         chromosome_info = _get_chromosome_info()
