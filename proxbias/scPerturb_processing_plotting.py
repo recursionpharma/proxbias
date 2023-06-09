@@ -146,7 +146,7 @@ def apply_infercnv_and_save_loss_info(filename: str, blocksize: int = 5, window:
         anndat = _load_and_process_data(filename)
         infercnvpy.tl.infercnv(
             anndat,
-            reference_key="gene",
+            reference_key="perturbation_label",
             reference_cat="control",
             window_size=window,
             step=blocksize,
@@ -158,7 +158,7 @@ def apply_infercnv_and_save_loss_info(filename: str, blocksize: int = 5, window:
 def _load_and_process_data(filename: str, chromosome_info: Optional[pd.DataFrame] = None) -> AnnData:
     """
     Load and process the specified file prior to applying `infercnv()`
-    The result of the processing is an AnnData object with the `gene`
+    The result of the processing is an AnnData object with a 'perturbation_label'
     key specifying the reference category for infercnv analysis.
 
     Args:
@@ -189,12 +189,13 @@ def _load_and_process_data(filename: str, chromosome_info: Optional[pd.DataFrame
     elif filename.startswith(("Frangieh", "Tian")):
         ad.obs["gene"] = ad.obs.perturbation.apply(lambda x: x if x != "control" else "").fillna("")
 
+    ad.obs["perturbation_label"] = ad.obs["gene"]
     if filename.startswith("Adamson"):
-        ad.obs.loc[pd.isna(ad.obs.perturbation), "gene"] = "control"
+        ad.obs.loc[pd.isna(ad.obs.perturbation), "perturbation_label"] = "control"
     elif filename.startswith(("Papalexi", "Replogle", "Frangieh", "Tian")):
-        ad.obs.loc[ad.obs.perturbation == "control", "gene"] = "control"
+        ad.obs.loc[ad.obs.perturbation == "control", "perturbation_label"] = "control"
 
-    return ad[ad.obs.gene != ""]
+    return ad[ad.obs.perturbation_label != ""]
 
 
 def _get_telo_centro(arm: str, direction: str) -> Optional[str]:
