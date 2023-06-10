@@ -17,7 +17,11 @@ from skimage.measure import block_reduce
 
 
 def _compute_chromosomal_loss(
-    anndat: AnnData, blocksize: int, neighborhood_cnt: int = 150, frac_cutoff: float = 0.7, cnv_cutoff: float = -0.05
+    anndat: AnnData,
+    blocksize: int,
+    neigh: int = 150,
+    frac_cutoff: float = 0.7,
+    cnv_cutoff: float = -0.05,
 ) -> pd.DataFrame:
     """
     Compute chromosomal loss in both the 3' and 5' regions of the cut site for all gene perturbations in the provided
@@ -26,9 +30,9 @@ def _compute_chromosomal_loss(
 
     Args:
         anndat (AnnData): AnnData object containing the data with the CNV values.
-        blocksize (int): Block size that was used for computing the CNV values by the infercnv call. Needed to identify
-            the number of blocks to consider for the gene neighborhood specified in the neighborhood_cnt parameter.
-        neighborhood_cnt (int): Number of neighboring genes to consider. Default is 150.
+        blocksize (int): Block size that was used for computing the CNV values by the infercnv call. This is eeded for
+            identifying the number of blocks to consider for the gene neighborhood specified in the `neigh` parameter.
+        neigh (int): Number of neighboring genes to consider. Default is 150.
         frac_cutoff (float): Cutoff fraction for low CNV. Default is 0.7, which means we expect 70% or more of the genes
             in the neighborhood to have low CNV.
         cnv_cutoff (float): CNV cutoff value for "low CNV". Default is -0.05.
@@ -40,22 +44,22 @@ def _compute_chromosomal_loss(
     avar = anndat.var
     cnvarr = anndat.obsm["X_cnv"].toarray() <= cnv_cutoff
     perturbed_genes = list(set(anndat.obs.gene).intersection(avar.index))
-    ko_genes_to_look_at = perturbed_genes
-
-    list_aff, list_ko = zip(*itertools.product(perturbed_genes, ko_genes_to_look_at))
+    list_aff, list_ko = zip(*itertools.product(perturbed_genes, perturbed_genes))
     loss = pd.DataFrame({"ko_gene": list_ko, "aff_gene": list_aff})
 
     loss_5p_cells: List[List[str]] = [[]] * len(loss)
-    loss_5p_ko_cell_count = np.empty(len(loss))
-    loss_5p_ko_cell_frac = np.empty(len(loss))
+    loss_5p_ko_cell_count = np.zeros(len(loss))
+    loss_5p_ko_cell_frac = np.zeros(len(loss))
     loss_3p_cells: List[List[str]] = [[]] * len(loss)
-    loss_3p_ko_cell_count = np.empty(len(loss))
-    loss_3p_ko_cell_frac = np.empty(len(loss))
+    loss_3p_ko_cell_count = np.zeros(len(loss))
+    loss_3p_ko_cell_frac = np.zeros(len(loss))
     i5p = 0
     i3p = 0
     for aff_gene in perturbed_genes:
         aff_chr = avar.loc[aff_gene].chromosome
         if pd.isna(aff_chr):
+            i5p += len(perturbed_genes)
+            i3p += len(perturbed_genes)
             continue
         # get all genes in the same chromosome with the KO gene, sorted
         avari = avar[avar.chromosome == aff_chr].sort_values("start")
@@ -72,15 +76,15 @@ def _compute_chromosomal_loss(
         # get block position of the gene in the genome
         aff_gene_blocknum = aff_chr_startblocknum + aff_gene_blocknum_
 
-        block_count_5p = min(int(neighborhood_cnt / blocksize), aff_gene_blocknum - aff_chr_startblocknum)
-        block_count_3p = min(int(neighborhood_cnt / blocksize), aff_chr_endblocknum - aff_gene_blocknum)
+        block_count_5p = min(int(neigh / blocksize), aff_gene_blocknum - aff_chr_startblocknum)
+        block_count_3p = min(int(neigh / blocksize), aff_chr_endblocknum - aff_gene_blocknum)
 
         blocks_5p = list(np.arange((aff_gene_blocknum - block_count_5p), aff_gene_blocknum))
         blocks_3p = list(np.arange(aff_gene_blocknum, (aff_gene_blocknum + block_count_3p)))
 
         for t, blocks in {"5p": blocks_5p, "3p": blocks_3p}.items():
             low_frac = np.sum(cnvarr[:, blocks], axis=1) / len(blocks)
-            for ko_gene in ko_genes_to_look_at:
+            for ko_gene in perturbed_genes:
                 ko_gene_ixs = anndat.obs.gene == ko_gene
                 cells = list(anndat.obs.index[(low_frac >= frac_cutoff) & ko_gene_ixs])
                 if t == "5p":
@@ -136,7 +140,7 @@ def apply_infercnv_and_save_loss_info(filename: str, blocksize: int = 5, window:
         filename (str): Name of the file to process.
         blocksize (int, optional): Block size for infercnv analysis. Default is 5.
         window (int, optional): Window size for infercnv analysis. Default is 100.
-        neigh (int, optional): Number of nearest neighbors for specificity computation. Default is 150.
+        neigh (int, optional): Number of neighboring genes to consider in loss computation. Default is 150.
 
     Returns:
         None
@@ -189,7 +193,7 @@ def _load_and_process_data(filename: str, chromosome_info: Optional[pd.DataFrame
     elif filename.startswith(("Frangieh", "Tian")):
         ad.obs["gene"] = ad.obs.perturbation.apply(lambda x: x if x != "control" else "").fillna("")
 
-    ad.obs["perturbation_label"] = ad.obs["gene"]
+    ad.obs["perturbation_label"] = ad.obs["gene"].astype("str")
     if filename.startswith("Adamson"):
         ad.obs.loc[pd.isna(ad.obs.perturbation), "perturbation_label"] = "control"
     elif filename.startswith(("Papalexi", "Replogle", "Frangieh", "Tian")):
@@ -501,13 +505,13 @@ def plot_loss_for_selected_genes(
         chromosome_info (pd.DataFrame, optional): DataFrame containing chromosome information. Defaults to None.
         blocksize (int, optional): Block size for infercnv analysis. Defaults to 5.
         window (int, optional): Window size for infercnv analysis. Defaults to 100.
-        neigh (int, optional): Neighbor parameter for infercnv analysis. Defaults to 150.
+        neigh (int, optional): Number of neighboring genes to consider in loss computation. Defaults to 150.
 
     Returns:
         None
 
     Raises:
-        FileNotFound or KeyError
+        FileNotFoundError or KeyError
     """
     if chromosome_info is None:
         chromosome_info = _get_chromosome_info()
