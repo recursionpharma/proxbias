@@ -20,10 +20,8 @@ include rxrx3 for IP reasons.
 - `cpg0016_plots.ipynb` - Create whole-genome plots from cpg0016, calculate Brunner-Munzel statistics and make bar plots.
 - `shinyDepMap_benchmark.ipynb` - Load DepMap 19Q3 data and create plots showing an enrichment for within-chromosome arm relationships.
 - `DepMap_PB_Drivers.ipynb` - Use DepMap 22Q4 data to look at differential proximity bias when TP53 and other genes are wild-type vs loss/gain of function.
+- `scPerturb_tables_heatmaps.ipynb` - Load scRNASeq datasets from scPerturb, run infercnv, compute chromosomal loss, generate result tables, and plot infercnv heatmaps for cells with specific loss.
 
 # TODO:
-- Load in DepMap 22Q4 data
-- Load in DepMap shRNA data
 - Create whole-genome plots for the DepMap data
 - Code to search DepMap for drivers of proximity bias
-- Add in code to analyze RNA sequencing data
