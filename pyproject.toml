@@ -37,6 +37,7 @@ dependencies = [
 	"infercnvpy",
 	"wget",
 	"efaar-benchmarking",
+	"tqdm",
 ]
 
 [project.optional-dependencies]
