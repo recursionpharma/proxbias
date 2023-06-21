@@ -37,8 +37,8 @@ def _compute_chromosomal_loss(
         anndat (AnnData): AnnData object containing the data with the CNV values.
         blocksize (int): Block size that was used for computing the CNV values by the infercnv call. This is needed for
             identifying the number of blocks to consider for the gene neighborhood specified in the `neigh` parameter.
-        neigh (int): Number of neighboring genes to consider. Default is 150 (including the perturbed gene). If there are
-            less than 150 neighboring genes on the same chromosome as the perturbed gene, this number is capped accordingly.
+        neigh (int): Number of neighbor genes to consider. Default is 150 (including the perturbed gene). If there are
+            < 150 neighbor genes on the same chromosome as the perturbed gene, this number is capped accordingly.
         frac_cutoff (float): Cutoff fraction for low CNV. Default is 0.7, which means we expect 70% or more of the genes
             in the neighborhood to have low CNV.
         cnv_cutoff (float): CNV cutoff value for "low CNV". Default is -0.05.
