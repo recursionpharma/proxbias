@@ -231,6 +231,7 @@ session-info==1.0.0
     #   scanpy
 six==1.16.0
     # via
+    #   asttokens
     #   patsy
     #   python-dateutil
 stack-data==0.6.2
@@ -250,6 +251,7 @@ tifffile==2023.4.12
 tqdm==4.65.0
     # via
     #   infercnvpy
+    #   proxbias (pyproject.toml)
     #   scanpy
     #   umap-learn
 traitlets==5.9.0
