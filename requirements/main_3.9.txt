@@ -211,7 +211,7 @@ scikit-learn==1.2.2
     #   pynndescent
     #   scanpy
     #   umap-learn
-scipy==1.9.1
+scipy==1.10.0
     # via
     #   anndata
     #   proxbias (pyproject.toml)
