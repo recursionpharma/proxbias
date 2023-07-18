@@ -29,7 +29,7 @@ def get_transforms(
     *,
     loc: float = 0.0,
     scale: float = 0.2,
-) -> pd.DataFrame:
+) -> np.ndarray:
     """Obtain the percentile ranking transformed values for an array.
     This function will map the distance metric into the null distribution to
     obtain each measurement's percentile ranking, and then rescale that
