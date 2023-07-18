@@ -4,9 +4,9 @@ from scipy import stats as ss
 
 
 def _get_percentiles(
-    null: np.array,
-    x: np.array,
-) -> np.array:
+    null: np.ndarray,
+    x: np.ndarray,
+) -> np.ndarray:
     """
     Convert values in `x` to percentiles relative to the `null`
     """
@@ -14,9 +14,9 @@ def _get_percentiles(
 
 
 def _transform(
-    percentiles: np.array,
+    percentiles: np.ndarray,
     norm: ss.norm,
-) -> np.array:
+) -> np.ndarray:
     """
     transform `percentiles` into corresponding values in `norm`
     """
@@ -24,8 +24,8 @@ def _transform(
 
 
 def get_transforms(
-    x: np.array,
-    null: np.array,
+    x: np.ndarray,
+    null: np.ndarray,
     *,
     loc: float = 0.0,
     scale: float = 0.2,
@@ -37,13 +37,13 @@ def get_transforms(
     transformed values.
     Inputs:
     -------
-    - x (np.array): array of values
-    - null_distribution (np.array): values that represents a null
+    - x (np.ndarray): array of values
+    - null_distribution (np.ndarray): values that represents a null
     - loc (float, optional): Used for the center of the normal distribution. Defaults to 0.0
     - scale (int, optional): Used for the scale of the normal distribution. Defaults to 0.2
     Returns:
     --------
-    - np.array
+    - np.ndarray
     """
     norm = ss.norm(loc=loc, scale=scale)
     null = null.copy()
