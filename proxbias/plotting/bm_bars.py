@@ -13,6 +13,7 @@ def plot_stat_arm_bars(
     pval_col: str,
     ylabel: str,
     title: Optional[str] = None,
+    figsize: tuple = (15, 5),
     palette: str = "YlGnBu_r",
     legend: bool = True,
     ylim: Optional[Tuple[int, int]] = None,
@@ -33,6 +34,7 @@ def plot_stat_arm_bars(
     - pval_col: column of `df` containing p-values to be used for significance
     - ylabel: y-axis label for the plot, describing the statistic in `stat_col`
     - title: optional title for figure
+    - figsize: tuple for size of the figure
     - palette: Name of Seaborn palette to use
     - legend: whether to show a legend
     - ylim: optional specified y-axis limits
@@ -75,7 +77,7 @@ def plot_stat_arm_bars(
             bar_ax.legend(handles=[patch1, patch2, patch3, patch4], loc=(1.01, 0.3))
         for tick in bar_ax.xaxis.get_major_ticks()[1::2]:
             tick.set_pad(25)
-        fig.set_size_inches((15, 5))
+        fig.set_size_inches(figsize)
         fig.set_facecolor("white")
         if f_name is not None:
             plt.savefig(f_name, dpi=600, format=fmt, bbox_inches="tight")
@@ -99,6 +101,7 @@ def plot_bm_bar_pairs(
     hue: str,
     lab1: str,
     lab2: str,
+    figsize: tuple = (15, 5),
     legend_loc: str = "upper center",
     f_name: str = "test.svg",
     fmt: str = "svg",
@@ -115,6 +118,7 @@ def plot_bm_bar_pairs(
     - hue: hue column name
     - lab1: label for the first group
     - lab2: label for the second group
+    - figsize: tuple for size of the figure
     - legend_loc: location of the legend
     - f_name: filename of output file
     - i: integer to offset color selection
@@ -140,5 +144,5 @@ def plot_bm_bar_pairs(
     plt.subplots_adjust(hspace=0.4)
     plt.gcf().set_facecolor("white")
     ax.set_facecolor("white")
-    fig.set_size_inches((15, 5))
+    fig.set_size_inches(figsize)
     plt.savefig(f_name, format=fmt, bbox_inches="tight")
