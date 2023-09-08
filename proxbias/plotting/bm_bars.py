@@ -99,6 +99,7 @@ def plot_bm_bar_pairs(
     hue: str,
     lab1: str,
     lab2: str,
+    figsize: tuple = (15,5),
     legend_loc: str = "upper center",
     f_name: str = "test.svg",
     fmt: str = "svg",
@@ -140,5 +141,5 @@ def plot_bm_bar_pairs(
     plt.subplots_adjust(hspace=0.4)
     plt.gcf().set_facecolor("white")
     ax.set_facecolor("white")
-    fig.set_size_inches((15, 5))
+    fig.set_size_inches(figsize)
     plt.savefig(f_name, format=fmt, bbox_inches="tight")
