@@ -10,7 +10,7 @@ def _get_percentiles(
     """
     Convert values in `x` to percentiles relative to the `null`
     """
-    return np.searchsorted(null, x, side='right') / len(null)
+    return np.searchsorted(null, x, side="right") / len(null)
 
 
 def get_transforms(
