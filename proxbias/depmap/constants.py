@@ -2,7 +2,7 @@ DEPMAP_API_URL = "https://depmap.org/portal/api/download/files"
 DEPMAP_RELEASE_DEFAULT = "DepMap Public 22Q4"
 
 CNV_FILENAME = "OmicsCNGene.csv"
-DEPENDENCY_EFFECT_FILENAME = "CRISPRGeneEffect.csv"
+CRISPR_DEPENDENCY_EFFECT_FILENAME = "CRISPRGeneEffect.csv"
 MUTATION_FILENAME = "OmicsSomaticMutations.csv"
 
 DEMETER2_RELEASE_DEFAULT = "DEMETER2 Data v6"

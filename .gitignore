@@ -127,3 +127,6 @@ proxbias/notebooks/plots/
 .detignore
 notebook_config.yaml
 startup-hook.sh
+
+# Depmap
+depmap/*
