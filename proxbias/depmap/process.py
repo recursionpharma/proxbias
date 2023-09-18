@@ -59,7 +59,7 @@ def _bootstrap_gene(
     eval_kwargs: Dict[str, Any],
     complete_lof: bool,
     verbose: bool,
-    n_workers: Optional[int] = None,
+    n_workers: Optional[int] = 1,
 ):
     start_gene_time = time.time()
     rng = np.random.default_rng(seed)
@@ -104,9 +104,18 @@ def _bootstrap_gene(
             fut_type = futures_dict[fut]
             stats, _ = fut.result()
             if fut_type == "wt":
-                wt_stats.extend(stats)
+                wt_stats.append(stats)
             else:
-                test_stats.extend(stats)
+                test_stats.append(stats)
+    # for _ in range(n_bootstrap):
+    #     wt_deps = rng.choice(wt_columns, size=choose_n, replace=False)
+    #     test_deps = rng.choice(test_columns, size=choose_n, replace=False)
+    #     wt_df = dep_data.loc[:, wt_deps]
+    #     test_df = dep_data.loc[:, test_deps]
+    #     wt = eval_function(wt_df, seed=rng.integers(low=0, high=9001, size=1)[0], **eval_kwargs)
+    #     test: cf.Future = eval_function(test_df, seed=rng.integers(low=0, high=9001, size=1)[0], **eval_kwargs)
+    #     wt_stats.append(wt)
+    #     test_stats.append(test)
 
     duration = time.time() - start_gene_time
     diff = np.array(test_stats).mean() - np.array(wt_stats).mean()
@@ -138,7 +147,7 @@ def bootstrap_stats_parallel(
     eval_kwargs: Dict[str, Any] = {"n_samples": 100, "n_trials": 50, "return_samples": False},
     complete_lof: bool = False,
     verbose: bool = False,
-    n_workers: int = int(os.getenv("SLURM_JOB_CPUS_PER_NODE", 0)),
+    n_workers: int = int(os.getenv("SLURM_JOB_CPUS_PER_NODE", 1)),
 ) -> pd.DataFrame:
     """
     gene of interest
@@ -165,10 +174,6 @@ def bootstrap_stats_parallel(
     invalid_genes = genes_of_interest_index.difference(available_genes)
     if not invalid_genes.empty:
         print(f"{invalid_genes} not found in data.")
-
-    # multiprocessing / concurrent futures expect None instead of 0
-    if n_workers == 0:
-        n_workers = None
 
     results = {}
     for gene_of_interest in available_genes:
