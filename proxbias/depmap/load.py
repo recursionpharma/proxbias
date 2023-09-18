@@ -1,16 +1,18 @@
 import os
-from typing import Tuple
 from functools import partial
+from typing import List, Tuple
+
 import pandas as pd
 
-
-DEPMAP_API_URL = "https://depmap.org/portal/api/download/files"
-DEPMAP_RELEASE_DEFAULT = "DepMap Public 22Q4"
-DEMETER2_RELEASE_DEFAULT = "DEMETER2 Data v6"
-CNV_FILENAME = "OmicsCNGene.csv"
-CRISPR_DEPENDENCY_EFFECT_FILENAME = "CRISPRGeneEffect.csv"
-RNAI_DEPENDENCY_EFFECT_FILENAME = "D2_combined_gene_dep_scores.csv"
-MUTATION_FILENAME = "OmicsSomaticMutations.csv"
+from proxbias.depmap.constants import (
+    CNV_FILENAME,
+    CRISPR_DEPENDENCY_EFFECT_FILENAME,
+    DEMETER2_RELEASE_DEFAULT,
+    DEPMAP_API_URL,
+    DEPMAP_RELEASE_DEFAULT,
+    MUTATION_FILENAME,
+    RNAI_DEPENDENCY_EFFECT_FILENAME,
+)
 
 
 def _download_file(_release_files: pd.DataFrame, _filename: str, **read_kwargs):
