@@ -1,6 +1,6 @@
 import os
 from functools import partial
-from typing import List, Tuple
+from typing import Tuple
 
 import pandas as pd
 

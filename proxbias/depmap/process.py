@@ -59,7 +59,7 @@ def _bootstrap_gene(
     eval_kwargs: Dict[str, Any],
     complete_lof: bool,
     verbose: bool,
-    n_workers: Optional[int] = 1,
+    n_workers: int = 1,
 ):
     start_gene_time = time.time()
     rng = np.random.default_rng(seed)

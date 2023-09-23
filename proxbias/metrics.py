@@ -3,21 +3,20 @@ from typing import Optional, Tuple, Union
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
-from scipy.stats import combine_pvalues, spearmanr
-from statsmodels.stats.nonparametric import rank_compare_2indep
-from sklearn.utils import Bunch
-
+from efaar_benchmarking.constants import BENCHMARK_SOURCES, N_NULL_SAMPLES, RANDOM_SEED
 from efaar_benchmarking.utils import (
     generate_null_cossims,
     generate_query_cossims,
     get_benchmark_data,
     get_feats_w_indices,
 )
-from efaar_benchmarking.constants import RANDOM_SEED, BENCHMARK_SOURCES, N_NULL_SAMPLES
+from scipy.stats import combine_pvalues, spearmanr
+from sklearn.utils import Bunch
+from statsmodels.stats.nonparametric import rank_compare_2indep
 
 from proxbias.utils.chromosome_info import get_chromosome_info_as_dfs, get_chromosome_info_as_dicts
-from proxbias.utils.cosine_similarity import cosine_similarity
 from proxbias.utils.constants import ARMS_ORD
+from proxbias.utils.cosine_similarity import cosine_similarity
 
 
 def _monte_carlo_brunner_munzel(
@@ -122,11 +121,12 @@ def genome_proximity_bias_score(
     seed: Optional[int] = None,
     return_samples: bool = True,
     combined: bool = True,
+    min_samples_in_arm: int = 5,
 ) -> Union[
     Tuple[Union[npt.NDArray, np.float32], Union[npt.NDArray, np.float32], npt.NDArray, npt.NDArray],
     Tuple[Union[npt.NDArray, np.float32], Union[npt.NDArray, np.float32]],
 ]:
-    cossims, gene_info, genes_by_arm = _prep_data(gene_df)
+    cossims, gene_info, genes_by_arm = _prep_data(gene_df, min_samples_in_arm=min_samples_in_arm)
     num_genes = len(cossims)
     rng = np.random.default_rng(seed)
     sample_indices = rng.integers(num_genes, size=(4, n_trials, n_samples))
