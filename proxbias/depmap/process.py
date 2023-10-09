@@ -20,7 +20,7 @@ def split_models(
     cutoffs: Tuple[float, float] = (CN_LOSS_CUTOFF, CN_GAIN_CUTOFF),
     complete_only: bool = False,
 ) -> Tuple[Set[str], Set[str], Set[str], Set[str]]:
-    cnv_subset = (np.power(2, cnv_data.loc[gene_symbol]) - 1) * 2
+    cnv_subset = pd.Series((np.power(2, cnv_data.loc[gene_symbol]) - 1) * 2)
     all_cnv = cnv_subset.loc[cnv_subset.index.intersection(candidate_models)]
     lof = set(candidate_models).intersection(all_cnv.loc[all_cnv < cutoffs[0]].index.unique())
     gof = set(candidate_models).intersection(all_cnv.loc[all_cnv >= cutoffs[1]].index.unique())
@@ -63,8 +63,6 @@ def _bootstrap_gene(
 ):
     start_gene_time = time.time()
     rng = np.random.default_rng(seed)
-    test_columns = []
-    wt_columns = []
     lof, wt, gof, _ = split_models(
         gene_symbol=gene_of_interest,
         candidate_models=candidate_models,
@@ -73,8 +71,8 @@ def _bootstrap_gene(
         cutoffs=cnv_cutoffs,
         complete_only=complete_lof,
     )
-    wt_columns = dep_data.columns.intersection(wt)
-    test_columns = dep_data.columns.intersection(lof if search_mode == "lof" else gof)
+    wt_columns = dep_data.columns.intersection(list(wt))
+    test_columns = dep_data.columns.intersection(list(lof if search_mode == "lof" else gof))
     n_test = len(test_columns)
     n_wt = len(wt_columns)
     choose_n = int(min(n_test, n_wt) * model_sample_rate)

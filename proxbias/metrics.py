@@ -69,7 +69,7 @@ def _prep_data(
     gene_info = gene_info.reset_index().set_index("gene_code").sort_index()
 
     gigb = gene_info.groupby("chrom_arm_code")
-    gene_codes_by_arm = gigb.apply(lambda x: x.index.to_numpy(dtype=np.int32)).to_list()
+    gene_codes_by_arm = gigb.apply(lambda x: x.index.to_numpy(dtype=np.int32)).to_list()  # type: ignore
     typed_gene_codes_by_arm = NumbaList()
     [typed_gene_codes_by_arm.append(x) for x in gene_codes_by_arm]
     cossims = sk_cossim(gene_df)
@@ -166,14 +166,14 @@ def genome_proximity_bias_score(
         cossims,
         sample_indices[0].copy(),
         sample_indices[1].copy(),
-        gene_to_arm.to_numpy(dtype=np.int32),
+        gene_to_arm.to_numpy(dtype=np.dtype(np.int32)),
         genes_by_arm,
     )
     inter_arm_samples = _get_inter_samples(
         cossims,
         sample_indices[2].copy(),
         sample_indices[3].copy(),
-        gene_to_arm.to_numpy(dtype=np.int32),
+        gene_to_arm.to_numpy(dtype=np.dtype(np.int32)),
         genes_by_arm,
     )
     prob_intra_greater, pvalue = _monte_carlo_brunner_munzel(
