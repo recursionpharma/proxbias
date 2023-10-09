@@ -2,7 +2,7 @@ import concurrent.futures as cf
 import multiprocessing as mp
 import os
 import time
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Set, Tuple
 
 import numpy as np
 import pandas as pd
@@ -107,15 +107,6 @@ def _bootstrap_gene(
                 wt_stats.append(stats)
             else:
                 test_stats.append(stats)
-    # for _ in range(n_bootstrap):
-    #     wt_deps = rng.choice(wt_columns, size=choose_n, replace=False)
-    #     test_deps = rng.choice(test_columns, size=choose_n, replace=False)
-    #     wt_df = dep_data.loc[:, wt_deps]
-    #     test_df = dep_data.loc[:, test_deps]
-    #     wt = eval_function(wt_df, seed=rng.integers(low=0, high=9001, size=1)[0], **eval_kwargs)
-    #     test: cf.Future = eval_function(test_df, seed=rng.integers(low=0, high=9001, size=1)[0], **eval_kwargs)
-    #     wt_stats.append(wt)
-    #     test_stats.append(test)
 
     duration = time.time() - start_gene_time
     diff = np.array(test_stats).mean() - np.array(wt_stats).mean()
@@ -130,7 +121,7 @@ def _bootstrap_gene(
     }
 
 
-def bootstrap_stats_parallel(
+def bootstrap_stats(
     genes_of_interest: List[str],
     dependency_data: pd.DataFrame,
     cnv_data: pd.DataFrame,
