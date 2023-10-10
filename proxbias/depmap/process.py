@@ -88,8 +88,8 @@ def _bootstrap_gene(
         for _ in range(n_bootstrap):
             wt_deps = rng.choice(wt_columns, size=choose_n, replace=False)
             test_deps = rng.choice(test_columns, size=choose_n, replace=False)
-            wt_df = dep_data.loc[:, wt_deps] # type: ignore
-            test_df = dep_data.loc[:, test_deps] # type: ignore
+            wt_df = dep_data.loc[:, wt_deps]  # type: ignore
+            test_df = dep_data.loc[:, test_deps]  # type: ignore
             fut_wt: cf.Future = executor.submit(
                 eval_function, wt_df, seed=rng.integers(low=0, high=9001, size=1)[0], **eval_kwargs
             )
@@ -149,7 +149,7 @@ def bootstrap_stats(
     evaluation function
     evaluation function keyword arguments
     """
-    dep_data = dependency_data.loc[:, dependency_data.columns.intersection(candidate_models)].copy() # type: ignore
+    dep_data = dependency_data.loc[:, dependency_data.columns.intersection(candidate_models)].copy()  # type: ignore
     genes_of_interest_index = pd.Index(genes_of_interest, dtype=object)
     # TODO: test if it's okay to do this here or if I need to do it for wt/test specifically
     if center_genes:

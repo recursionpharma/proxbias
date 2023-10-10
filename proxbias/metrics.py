@@ -166,14 +166,14 @@ def genome_proximity_bias_score(
         cossims,
         sample_indices[0].copy(),
         sample_indices[1].copy(),
-        gene_to_arm.to_numpy(dtype=np.dtype(np.int32)), # type: ignore
+        gene_to_arm.to_numpy(dtype=np.dtype(np.int32)),  # type: ignore
         genes_by_arm,
     )
     inter_arm_samples = _get_inter_samples(
         cossims,
         sample_indices[2].copy(),
         sample_indices[3].copy(),
-        gene_to_arm.to_numpy(dtype=np.dtype(np.int32)), # type: ignore
+        gene_to_arm.to_numpy(dtype=np.dtype(np.int32)),  # type: ignore
         genes_by_arm,
     )
     prob_intra_greater, pvalue = _monte_carlo_brunner_munzel(
