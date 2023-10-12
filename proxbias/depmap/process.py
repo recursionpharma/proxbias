@@ -7,7 +7,7 @@ from typing import Any, Callable, Dict, List, Set, Tuple
 import numpy as np
 import pandas as pd
 
-from proxbias.depmap.constants import CN_GAIN_CUTOFF, CN_LOSS_CUTOFF, COMPLETE_LOF_MUTATION_TYPES
+from proxbias.depmap.constants import CN_GAIN_CUTOFF, CN_LOSS_CUTOFF, COMPLETE_LOF_MUTATION_TYPES, GOF_MUTATION_TYPES
 from proxbias.depmap.load import center_gene_effects
 from proxbias.metrics import genome_proximity_bias_score
 
@@ -19,6 +19,7 @@ def split_models(
     mutation_data: pd.DataFrame,
     cutoffs: Tuple[float, float] = (CN_LOSS_CUTOFF, CN_GAIN_CUTOFF),
     complete_only: bool = False,
+    filter_gof: bool = False,
 ) -> Tuple[Set[str], Set[str], Set[str], Set[str]]:
     cnv_subset = pd.Series((np.power(2, cnv_data.loc[gene_symbol]) - 1) * 2)
     all_cnv = cnv_subset.loc[cnv_subset.index.intersection(candidate_models)]
@@ -34,6 +35,11 @@ def split_models(
         mutants = set(candidate_models).intersection(mutant_lines)
         wt_low_change = set(candidate_models).difference(lof | gof | set(mutants))
         return mutants, wt_low_change, set(), set()
+    if filter_gof:
+        gof_lines = (
+            mutants_for_gene.loc[mutants_for_gene["VariantInfo"].isin(GOF_MUTATION_TYPES), "ModelID"].unique().tolist()
+        )
+        gof = gof.intersection(gof_lines)
 
     mutant_lines = mutants_for_gene.loc[~mutants_for_gene["VariantInfo"].isna(), "ModelID"].unique().tolist()
     wild_type = list(set(candidate_models).difference(mutant_lines))
@@ -58,6 +64,7 @@ def _bootstrap_gene(
     eval_function: Callable,
     eval_kwargs: Dict[str, Any],
     complete_lof: bool,
+    filter_gof: bool,
     verbose: bool,
     n_workers: int = 1,
 ):
@@ -70,6 +77,7 @@ def _bootstrap_gene(
         mutation_data=mutation_data,
         cutoffs=cnv_cutoffs,
         complete_only=complete_lof,
+        filter_gof=filter_gof,
     )
     wt_columns = dep_data.columns.intersection(list(wt))
     test_columns = dep_data.columns.intersection(list(lof if search_mode == "lof" else gof))
@@ -127,7 +135,7 @@ def bootstrap_stats(
     candidate_models: List[str],
     model_sample_rate: float = 0.8,
     search_mode: str = "lof",
-    n_min_samples: int = 10,
+    n_min_samples: int = 20,
     n_bootstrap: int = 100,
     seed: int = 42,
     center_genes: bool = True,
@@ -135,6 +143,7 @@ def bootstrap_stats(
     eval_function: Callable = genome_proximity_bias_score,
     eval_kwargs: Dict[str, Any] = {"n_samples": 100, "n_trials": 50, "return_samples": False},
     complete_lof: bool = False,
+    filter_gof: bool = False,
     verbose: bool = False,
     n_workers: int = int(os.getenv("SLURM_JOB_CPUS_PER_NODE", 1)),
 ) -> pd.DataFrame:
@@ -174,6 +183,7 @@ def bootstrap_stats(
             mutation_data=mutation_data,
             cnv_cutoffs=cnv_cutoffs,
             complete_lof=complete_lof,
+            filter_gof=filter_gof,
             verbose=verbose,
             search_mode=search_mode,
             model_sample_rate=model_sample_rate,

@@ -73,7 +73,6 @@ def _prep_data(
     typed_gene_codes_by_arm = NumbaList()
     [typed_gene_codes_by_arm.append(x) for x in gene_codes_by_arm]
     cossims = sk_cossim(gene_df)
-
     gene_to_arm = gene_info.chrom_arm_code
 
     return cossims, gene_to_arm, typed_gene_codes_by_arm
