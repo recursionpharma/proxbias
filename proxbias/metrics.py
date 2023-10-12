@@ -100,7 +100,7 @@ def _get_intra_samples(
     total_samples = len(i_flat)
 
     samples = np.empty(shape=total_samples, dtype=np.float64)
-    for index in prange(total_samples):
+    for index in range(total_samples):
         i_index = i_flat[index]
         j_lookup = j_flat[index]
         arm_genes = genes_by_arm[gene_to_arm[i_index]]
@@ -130,7 +130,7 @@ def _get_inter_samples(
 
     gene_set = set(np.arange(cossims.shape[0], dtype=np.int32))
     allowed_genes_by_arm = genes_by_arm.copy()
-    for arm_idx in prange(len(genes_by_arm)):
+    for arm_idx in range(len(genes_by_arm)):
         allowed_genes_by_arm[arm_idx] = np.asarray(list(gene_set - set(genes_by_arm[arm_idx])))
 
     samples = np.empty(shape=total_samples, dtype=np.float64)

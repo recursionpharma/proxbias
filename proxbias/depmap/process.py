@@ -66,7 +66,6 @@ def _bootstrap_gene(
     complete_lof: bool,
     filter_gof: bool,
     verbose: bool,
-    n_workers: int = 1,
 ):
     start_gene_time = time.time()
     rng = np.random.default_rng(seed)
@@ -91,35 +90,25 @@ def _bootstrap_gene(
         return {}
     test_stats = []
     wt_stats = []
-    futures_dict = {}
-    with cf.ProcessPoolExecutor(n_workers, mp_context=mp.get_context("spawn")) as executor:
-        for _ in range(n_bootstrap):
-            wt_deps = rng.choice(wt_columns, size=choose_n, replace=False)
-            test_deps = rng.choice(test_columns, size=choose_n, replace=False)
-            wt_df = dep_data.loc[:, wt_deps]  # type: ignore
-            test_df = dep_data.loc[:, test_deps]  # type: ignore
-            fut_wt: cf.Future = executor.submit(
-                eval_function, wt_df, seed=rng.integers(low=0, high=9001, size=1)[0], **eval_kwargs
-            )
-            fut_test: cf.Future = executor.submit(
-                eval_function, test_df, seed=rng.integers(low=0, high=9001, size=1)[0], **eval_kwargs
-            )
-            futures_dict[fut_wt] = "wt"
-            futures_dict[fut_test] = "test"
-        for fut in cf.as_completed(futures_dict):
-            fut_type = futures_dict[fut]
-            stats, _ = fut.result()
-            if fut_type == "wt":
-                wt_stats.append(stats)
-            else:
-                test_stats.append(stats)
+    for _ in range(n_bootstrap):
+        wt_deps = rng.choice(wt_columns, size=choose_n, replace=False)
+        test_deps = rng.choice(test_columns, size=choose_n, replace=False)
+        wt_df = dep_data.loc[:, wt_deps].copy()
+        test_df = dep_data.loc[:, test_deps].copy()
+        wt, _ = eval_function(wt_df, seed=rng.integers(low=0, high=9001, size=1)[0], **eval_kwargs)
+        test, _ = eval_function(test_df, seed=rng.integers(low=0, high=9001, size=1)[0], **eval_kwargs)
+        wt_stats.append(wt)
+        test_stats.append(test)
 
     duration = time.time() - start_gene_time
     diff = np.array(test_stats).mean() - np.array(wt_stats).mean()
-    print(f"Stats for {gene_of_interest} computed in {duration} - diff is {diff}, {n_wt} wt and {n_test} test")
+    print(f"Stats for {gene_of_interest} computed in {duration} - diff is {diff}, {n_wt} wt and {n_test} {search_mode}")
     return {
         "test_stats": test_stats,
+        "test_mean": np.array(test_stats).mean(),
         "wt_stats": wt_stats,
+        "wt_mean": np.array(wt_stats).mean(),
+        "diff": diff,
         "search_mode": search_mode,
         "n_sample_bootstrap": choose_n,
         "n_test": len(test_columns),
@@ -174,24 +163,30 @@ def bootstrap_stats(
         print(f"{invalid_genes} not found in data.")
 
     results = {}
-    for gene_of_interest in available_genes:
-        results[gene_of_interest] = _bootstrap_gene(
-            gene_of_interest=gene_of_interest,
-            candidate_models=candidate_models,
-            dep_data=dep_data,
-            cnv_data=cnv_data,
-            mutation_data=mutation_data,
-            cnv_cutoffs=cnv_cutoffs,
-            complete_lof=complete_lof,
-            filter_gof=filter_gof,
-            verbose=verbose,
-            search_mode=search_mode,
-            model_sample_rate=model_sample_rate,
-            n_min_samples=n_min_samples,
-            n_bootstrap=n_bootstrap,
-            seed=seed,
-            eval_function=eval_function,
-            eval_kwargs=eval_kwargs,
-            n_workers=n_workers,
-        )
+    future_results = {}
+    with cf.ProcessPoolExecutor(n_workers, mp_context=mp.get_context("spawn")) as executor:
+        for gene_of_interest in available_genes:
+            fut = executor.submit(
+                _bootstrap_gene,
+                gene_of_interest=gene_of_interest,
+                candidate_models=candidate_models,
+                dep_data=dep_data,
+                cnv_data=cnv_data,
+                mutation_data=mutation_data,
+                cnv_cutoffs=cnv_cutoffs,
+                complete_lof=complete_lof,
+                filter_gof=filter_gof,
+                verbose=verbose,
+                search_mode=search_mode,
+                model_sample_rate=model_sample_rate,
+                n_min_samples=n_min_samples,
+                n_bootstrap=n_bootstrap,
+                seed=seed,
+                eval_function=eval_function,
+                eval_kwargs=eval_kwargs,
+            )
+            future_results[fut] = gene_of_interest
+        for fut in cf.as_completed(future_results):
+            gene_of_interest = future_results[fut]
+            results[gene_of_interest] = fut.result()
     return pd.DataFrame(results)
