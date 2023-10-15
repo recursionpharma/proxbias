@@ -7,7 +7,7 @@ from typing import Any, Callable, Dict, List, Set, Tuple
 import numpy as np
 import pandas as pd
 
-from proxbias.depmap.constants import CN_GAIN_CUTOFF, CN_LOSS_CUTOFF, COMPLETE_LOF_MUTATION_TYPES, GOF_MUTATION_TYPES
+from proxbias.depmap.constants import CN_GAIN_CUTOFF, CN_LOSS_CUTOFF, COMPLETE_LOF_MUTATION_TYPES
 from proxbias.depmap.load import center_gene_effects
 from proxbias.metrics import genome_proximity_bias_score
 
@@ -19,12 +19,12 @@ def split_models(
     mutation_data: pd.DataFrame,
     cutoffs: Tuple[float, float] = (CN_LOSS_CUTOFF, CN_GAIN_CUTOFF),
     complete_only: bool = False,
-    filter_gof: bool = False,
+    filter_amp: bool = False,
 ) -> Tuple[Set[str], Set[str], Set[str], Set[str]]:
     cnv_subset = pd.Series((np.power(2, cnv_data.loc[gene_symbol]) - 1) * 2)
     all_cnv = cnv_subset.loc[cnv_subset.index.intersection(candidate_models)]
     lof = set(candidate_models).intersection(all_cnv.loc[all_cnv < cutoffs[0]].index.unique())
-    gof = set(candidate_models).intersection(all_cnv.loc[all_cnv >= cutoffs[1]].index.unique())
+    amp = set(candidate_models).intersection(all_cnv.loc[all_cnv >= cutoffs[1]].index.unique())
     mutants_for_gene = mutation_data.loc[mutation_data["HugoSymbol"] == gene_symbol]
     if complete_only:
         mutant_lines = (
@@ -33,20 +33,22 @@ def split_models(
             .tolist()
         )
         mutants = set(candidate_models).intersection(mutant_lines)
-        wt_low_change = set(candidate_models).difference(lof | gof | set(mutants))
+        wt_low_change = set(candidate_models).difference(lof | amp | set(mutants))
         return mutants, wt_low_change, set(), set()
-    if filter_gof:
-        gof_lines = (
-            mutants_for_gene.loc[mutants_for_gene["VariantInfo"].isin(GOF_MUTATION_TYPES), "ModelID"].unique().tolist()
+    if filter_amp:
+        complete_lof_lines = (
+            mutants_for_gene.loc[mutants_for_gene["VariantInfo"].isin(COMPLETE_LOF_MUTATION_TYPES), "ModelID"]
+            .unique()
+            .tolist()
         )
-        gof = gof.intersection(gof_lines)
+        amp = amp.difference(set(complete_lof_lines))
 
     mutant_lines = mutants_for_gene.loc[~mutants_for_gene["VariantInfo"].isna(), "ModelID"].unique().tolist()
     wild_type = list(set(candidate_models).difference(mutant_lines))
 
-    mutant_low_change = set(candidate_models).difference(lof | gof | set(wild_type))
-    wt_low_change = set(wild_type).difference(lof | gof)
-    return lof, wt_low_change, gof, mutant_low_change
+    mutant_low_change = set(candidate_models).difference(lof | amp | set(wild_type))
+    wt_low_change = set(wild_type).difference(lof | amp)
+    return lof, wt_low_change, amp, mutant_low_change
 
 
 def _bootstrap_gene(
@@ -64,22 +66,22 @@ def _bootstrap_gene(
     eval_function: Callable,
     eval_kwargs: Dict[str, Any],
     complete_lof: bool,
-    filter_gof: bool,
+    filter_amp: bool,
     verbose: bool,
 ):
     start_gene_time = time.time()
     rng = np.random.default_rng(seed)
-    lof, wt, gof, _ = split_models(
+    lof, wt, amp, _ = split_models(
         gene_symbol=gene_of_interest,
         candidate_models=candidate_models,
         cnv_data=cnv_data,
         mutation_data=mutation_data,
         cutoffs=cnv_cutoffs,
         complete_only=complete_lof,
-        filter_gof=filter_gof,
+        filter_amp=filter_amp,
     )
     wt_columns = dep_data.columns.intersection(list(wt))
-    test_columns = dep_data.columns.intersection(list(lof if search_mode == "lof" else gof))
+    test_columns = dep_data.columns.intersection(list(lof if search_mode == "lof" else amp))
     n_test = len(test_columns)
     n_wt = len(wt_columns)
     choose_n = int(min(n_test, n_wt) * model_sample_rate)
@@ -132,7 +134,7 @@ def bootstrap_stats(
     eval_function: Callable = genome_proximity_bias_score,
     eval_kwargs: Dict[str, Any] = {"n_samples": 100, "n_trials": 50, "return_samples": False},
     complete_lof: bool = False,
-    filter_gof: bool = False,
+    filter_amp: bool = False,
     verbose: bool = False,
     n_workers: int = int(os.getenv("SLURM_JOB_CPUS_PER_NODE", 1)),
 ) -> pd.DataFrame:
@@ -141,7 +143,7 @@ def bootstrap_stats(
     dependency data
     cnv data
     mutation data
-    search mode. lof=loss of function, gof=gain of function
+    search mode. lof=loss of function, amp=amplification
     min number of samples to start bootstraping, otherwise return empty dict
     number of bootstrap steps
     evaluation function
@@ -175,7 +177,7 @@ def bootstrap_stats(
                 mutation_data=mutation_data,
                 cnv_cutoffs=cnv_cutoffs,
                 complete_lof=complete_lof,
-                filter_gof=filter_gof,
+                filter_amp=filter_amp,
                 verbose=verbose,
                 search_mode=search_mode,
                 model_sample_rate=model_sample_rate,
@@ -189,4 +191,4 @@ def bootstrap_stats(
         for fut in cf.as_completed(future_results):
             gene_of_interest = future_results[fut]
             results[gene_of_interest] = fut.result()
-    return pd.DataFrame(results)
+    return pd.DataFrame.from_dict(results, orient="index")
