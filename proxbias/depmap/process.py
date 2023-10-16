@@ -84,12 +84,13 @@ def _bootstrap_gene(
     test_columns = dep_data.columns.intersection(list(lof if search_mode == "lof" else amp))
     n_test = len(test_columns)
     n_wt = len(wt_columns)
-    choose_n = int(min(n_test, n_wt) * model_sample_rate)
+    available_samples = min(n_test, n_wt)
 
-    if choose_n < n_min_samples:
+    if available_samples < n_min_samples:
         if verbose:
             print(f"Insufficient samples for {gene_of_interest}")
         return {}
+    choose_n = int(available_samples * model_sample_rate)
     test_stats = []
     wt_stats = []
     for _ in range(n_bootstrap):
@@ -126,7 +127,7 @@ def bootstrap_stats(
     candidate_models: List[str],
     model_sample_rate: float = 0.8,
     search_mode: str = "lof",
-    n_min_samples: int = 20,
+    n_min_samples: int = 25,
     n_bootstrap: int = 100,
     seed: int = 42,
     center_genes: bool = True,
