@@ -30,7 +30,7 @@ COMPLETE_LOF_MUTATION_TYPES = [
 ]
 
 # gain of function mutation types
-GOF_MUTATION_TYPES = [
+AMP_MUTATION_TYPES = [
     "MISSENSE",
     "IN_FRAME_DEL",
     "SPLICE_SITE",
