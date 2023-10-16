@@ -9,7 +9,7 @@ from efaar_benchmarking.utils import (
     get_benchmark_data,
     get_feats_w_indices,
 )
-from numba import njit, prange
+from numba import njit
 from numba.typed import List as NumbaList
 from scipy.stats import combine_pvalues, spearmanr
 from sklearn.metrics.pairwise import cosine_similarity as sk_cossim

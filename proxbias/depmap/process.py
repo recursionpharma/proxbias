@@ -93,8 +93,8 @@ def _bootstrap_gene(
     test_stats = []
     wt_stats = []
     for _ in range(n_bootstrap):
-        wt_deps = rng.choice(wt_columns, size=choose_n, replace=False)
-        test_deps = rng.choice(test_columns, size=choose_n, replace=False)
+        wt_deps = list(rng.choice(wt_columns, size=choose_n, replace=False))
+        test_deps = list(rng.choice(test_columns, size=choose_n, replace=False))
         wt_df = dep_data.loc[:, wt_deps].copy()
         test_df = dep_data.loc[:, test_deps].copy()
         wt, _ = eval_function(wt_df, seed=rng.integers(low=0, high=9001, size=1)[0], **eval_kwargs)
