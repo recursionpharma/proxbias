@@ -51,7 +51,8 @@ def _prep_data(
 ) -> Tuple[np.ndarray, pd.Series, List[np.ndarray]]:
     gene_df = gene_df.copy()
     gene_info, _, _ = get_chromosome_info_as_dfs()
-    gene_info = gene_info.loc[gene_info.index.intersection(gene_df.index)].sort_values("chrom_arm_name", ascending=True)  # type: ignore
+    gene_info = (gene_info.loc[gene_info.index.intersection(gene_df.index)]
+                          .sort_values("chrom_arm_name", ascending=True))  # type: ignore
     gene_info["chrom_arm_code"] = gene_info.chrom_arm_name.astype("category").cat.codes
     if min_samples_in_arm:
         seen_genes = gene_info.loc[gene_info.index.intersection(gene_df.index)]  # type: ignore
