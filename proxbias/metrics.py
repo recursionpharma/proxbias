@@ -51,15 +51,15 @@ def _prep_data(
 ) -> Tuple[np.ndarray, pd.Series, List[np.ndarray]]:
     gene_df = gene_df.copy()
     gene_info, _, _ = get_chromosome_info_as_dfs()
-    gene_info = gene_info.loc[gene_info.index.intersection(gene_df.index)].sort_values("chrom_arm_name", ascending=True)
+    gene_info = gene_info.loc[gene_info.index.intersection(gene_df.index)].sort_values("chrom_arm_name", ascending=True)  # type: ignore
     gene_info["chrom_arm_code"] = gene_info.chrom_arm_name.astype("category").cat.codes
     if min_samples_in_arm:
-        seen_genes = gene_info.loc[gene_info.index.intersection(gene_df.index)]
+        seen_genes = gene_info.loc[gene_info.index.intersection(gene_df.index)]  # type: ignore
         gene_counts_by_arm = seen_genes.groupby(["chrom_arm_code"]).size()
         allowed_arms = gene_counts_by_arm.loc[gene_counts_by_arm > min_samples_in_arm].index
         allowed_genes = seen_genes.loc[seen_genes["chrom_arm_code"].isin(allowed_arms)].index
     else:
-        allowed_genes = gene_df.index.intersection(gene_info.index)
+        allowed_genes = gene_df.index.intersection(gene_info.index)  # type: ignore
     gene_info = gene_info.loc[allowed_genes]
     gene_df = gene_df.loc[allowed_genes]
 
@@ -329,7 +329,7 @@ def compute_bm_centro_telo_rank_correlations(
         arm2corr[chrom_arm] = corr, p
     arm_corr_df = pd.DataFrame(arm2corr, index=["corr", "p"]).T
     arm_corr_df.index.name = "chromosome_arm"
-    corr_sample_sizes = pd.Series(arm2sample_size)
+    corr_sample_sizes = pd.Series(arm2sample_size)  # type: ignore
     sample_sizes_table = pd.DataFrame(corr_sample_sizes, columns=["sample size"])
     sample_sizes_table.index = [c.replace("chr", "") for c in sample_sizes_table.index]  # type: ignore
     sample_sizes_table["chromosome"] = [c.replace("p", "").replace("q", "") for c in sample_sizes_table.index]

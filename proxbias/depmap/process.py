@@ -151,18 +151,18 @@ def bootstrap_stats(
     evaluation function keyword arguments
     """
     dep_data = dependency_data.loc[:, dependency_data.columns.intersection(candidate_models)].copy()  # type: ignore
-    genes_of_interest_index = pd.Index(genes_of_interest, dtype=object)
+    genes_of_interest_index = pd.Index(genes_of_interest, dtype=object)  # type: ignore
     # TODO: test if it's okay to do this here or if I need to do it for wt/test specifically
     if center_genes:
         dep_data = center_gene_effects(dep_data)
 
     available_genes = (
-        dep_data.index.intersection(mutation_data.HugoSymbol.values)
+        dep_data.index.intersection(mutation_data.HugoSymbol.values)  # type: ignore
         .intersection(cnv_data.index)
         .intersection(genes_of_interest_index)
     )
     invalid_genes = genes_of_interest_index.difference(available_genes)
-    if not invalid_genes.empty:
+    if not invalid_genes.empty:  # type: ignore
         print(f"{invalid_genes} not found in data.")
 
     results = {}
