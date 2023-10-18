@@ -96,8 +96,9 @@ def plot_heatmap(
         index_df = sims.index.to_frame(index=False).reset_index().rename({"index": "pos"}, axis=1)
         chr_pos = index_df.groupby("chromosome").pos.max().sort_values()
         cent_pos = index_df.groupby("chromosome_arm").pos.max().sort_values()
-        # Filter to just p-arms
-        cent_pos_p = cent_pos[[x[-1] == "p" for x in cent_pos.index]]
+        if show_cent_lines:
+            # Filter to just p-arms
+            cent_pos_p = cent_pos[[x[-1] == "p" for x in cent_pos.index]]
         # Get midpoints for annotations
         chr_mids = pd.DataFrame(
             (np.insert(chr_pos.values[:-1], 0, 0) + chr_pos.values) / 2, index=chr_pos.index  # type: ignore
