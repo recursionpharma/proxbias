@@ -7,11 +7,7 @@ from typing import Any, Callable, Dict, List, Set, Tuple
 import numpy as np
 import pandas as pd
 
-from proxbias.depmap.constants import (
-    CN_GAIN_CUTOFF,
-    CN_LOSS_CUTOFF,
-    COMPLETE_LOF_MUTATION_TYPES,
-)
+from proxbias.depmap.constants import CN_GAIN_CUTOFF, CN_LOSS_CUTOFF, COMPLETE_LOF_MUTATION_TYPES
 from proxbias.depmap.load import center_gene_effects
 from proxbias.metrics import genome_proximity_bias_score
 
@@ -63,7 +59,7 @@ def _bootstrap_gene(
     candidate_models: List[str],
     model_sample_rate: float,
     search_mode: str,
-    n_min_samples: int,
+    n_min_cell_lines: int,
     n_bootstrap: int,
     seed: int,
     cnv_cutoffs: Tuple[float, float],
@@ -72,7 +68,7 @@ def _bootstrap_gene(
     complete_lof: bool,
     filter_amp: bool,
     verbose: bool,
-    fixed_sampling: bool,
+    fixed_cell_line_sampling: bool,
 ):
     start_gene_time = time.time()
     rng = np.random.default_rng(seed)
@@ -91,12 +87,12 @@ def _bootstrap_gene(
     n_wt = len(wt_columns)
     available_samples = min(n_test, n_wt)
 
-    if available_samples < n_min_samples:
+    if available_samples < n_min_cell_lines:
         if verbose:
             print(f"Insufficient samples for {gene_of_interest}")
         return {}
-    if fixed_sampling:
-        choose_n = int(n_min_samples * model_sample_rate)
+    if fixed_cell_line_sampling:
+        choose_n = int(n_min_cell_lines * model_sample_rate)
     else:
         choose_n = int(available_samples * model_sample_rate)
     test_stats = []
@@ -135,7 +131,7 @@ def bootstrap_stats(
     candidate_models: List[str],
     model_sample_rate: float = 0.8,
     search_mode: str = "lof",
-    n_min_samples: int = 25,
+    n_min_cell_lines: int = 25,
     n_bootstrap: int = 100,
     seed: int = 42,
     center_genes: bool = True,
@@ -146,7 +142,7 @@ def bootstrap_stats(
     filter_amp: bool = False,
     verbose: bool = False,
     n_workers: int = int(os.getenv("SLURM_JOB_CPUS_PER_NODE", 1)),
-    fixed_sampling: bool = False,
+    fixed_cell_line_sampling: bool = False,
 ) -> pd.DataFrame:
     """
     gene of interest
@@ -191,12 +187,12 @@ def bootstrap_stats(
                 verbose=verbose,
                 search_mode=search_mode,
                 model_sample_rate=model_sample_rate,
-                n_min_samples=n_min_samples,
+                n_min_cell_lines=n_min_cell_lines,
                 n_bootstrap=n_bootstrap,
                 seed=seed,
                 eval_function=eval_function,
                 eval_kwargs=eval_kwargs,
-                fixed_sampling=fixed_sampling,
+                fixed_cell_line_sampling=fixed_cell_line_sampling,
             )
             future_results[fut] = gene_of_interest
         for fut in cf.as_completed(future_results):
