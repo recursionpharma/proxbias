@@ -136,6 +136,7 @@ def get_chromosome_info_as_dicts(
 
     # Extra composite key for convenience
     band_df["region"] = band_df.chrom + band_df.name
+    band_dict: Dict[str, Any]
     if legacy_bands:
         band_df = band_df[["region", "chrom", "band_start", "band_end"]].set_index("region")
         band_dict = {str(k): tuple(v) for k, v in band_df.iterrows()}
