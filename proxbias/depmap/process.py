@@ -7,7 +7,11 @@ from typing import Any, Callable, Dict, List, Set, Tuple
 import numpy as np
 import pandas as pd
 
-from proxbias.depmap.constants import CN_GAIN_CUTOFF, CN_LOSS_CUTOFF, COMPLETE_LOF_MUTATION_TYPES
+from proxbias.depmap.constants import (
+    CN_GAIN_CUTOFF,
+    CN_LOSS_CUTOFF,
+    COMPLETE_LOF_MUTATION_TYPES,
+)
 from proxbias.depmap.load import center_gene_effects
 from proxbias.metrics import genome_proximity_bias_score
 
@@ -68,6 +72,7 @@ def _bootstrap_gene(
     complete_lof: bool,
     filter_amp: bool,
     verbose: bool,
+    fixed_sampling: bool,
 ):
     start_gene_time = time.time()
     rng = np.random.default_rng(seed)
@@ -90,7 +95,10 @@ def _bootstrap_gene(
         if verbose:
             print(f"Insufficient samples for {gene_of_interest}")
         return {}
-    choose_n = int(available_samples * model_sample_rate)
+    if fixed_sampling:
+        choose_n = int(n_min_samples * model_sample_rate)
+    else:
+        choose_n = int(available_samples * model_sample_rate)
     test_stats = []
     wt_stats = []
     for _ in range(n_bootstrap):
@@ -138,6 +146,7 @@ def bootstrap_stats(
     filter_amp: bool = False,
     verbose: bool = False,
     n_workers: int = int(os.getenv("SLURM_JOB_CPUS_PER_NODE", 1)),
+    fixed_sampling: bool = False,
 ) -> pd.DataFrame:
     """
     gene of interest
@@ -187,6 +196,7 @@ def bootstrap_stats(
                 seed=seed,
                 eval_function=eval_function,
                 eval_kwargs=eval_kwargs,
+                fixed_sampling=fixed_sampling,
             )
             future_results[fut] = gene_of_interest
         for fut in cf.as_completed(future_results):

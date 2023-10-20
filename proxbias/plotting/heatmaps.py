@@ -1,10 +1,9 @@
-import numpy as np
-import pandas as pd
 from typing import Optional
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-
+import numpy as np
+import pandas as pd
 from skimage.measure import block_reduce
 
 
@@ -126,7 +125,7 @@ def plot_heatmap(
             plt.plot([x + 0.5, x + 0.5], [ym, yM], color="k", ls="-", lw=lw)
             plt.plot([xm, xM], [x + 0.5, x + 0.5], color="k", ls="-", lw=lw)
     if show_cent_lines:
-        for x in cent_pos_p.values:  # type: ignore
+        for x in cent_pos_p.values:  # type: ignore[attr-undefined]
             plt.plot([x + 0.5, x + 0.5], [ym, yM], color="k", ls=":", lw=lw)
             plt.plot([xm, xM], [x + 0.5, x + 0.5], color="k", ls=":", lw=lw)
 
