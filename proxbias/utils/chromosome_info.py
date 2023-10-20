@@ -130,9 +130,9 @@ def get_chromosome_info_as_dicts(
 
     # Extra composite key for convenience
     gene_df["arm"] = gene_df.chrom + gene_df.chrom_arm
-    gene_dict = gene_df.to_dict(orient="index")
+    gene_dict: Dict[str, Any] = gene_df.to_dict(orient="index")  # type: ignore[assignment]
 
-    chrom_dict = chrom_df.to_dict(orient="index")
+    chrom_dict: Dict[str, Any] = chrom_df.to_dict(orient="index")  # type: ignore[assignment]
 
     # Extra composite key for convenience
     band_df["region"] = band_df.chrom + band_df.name
@@ -141,6 +141,5 @@ def get_chromosome_info_as_dicts(
         band_df = band_df[["region", "chrom", "band_start", "band_end"]].set_index("region")
         band_dict = {str(k): tuple(v) for k, v in band_df.iterrows()}
     else:
-        band_df.index = band_df.index.astype(str)
-        band_dict = band_df.to_dict(orient="index")
+        band_dict = band_df.to_dict(orient="index")  # type: ignore[assignment]
     return gene_dict, chrom_dict, band_dict
