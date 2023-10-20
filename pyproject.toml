@@ -29,6 +29,7 @@ dependencies = [
 	"pandas",
 	"s3fs",
 	"scipy",
+	"scikit-image",
 	"scikit-learn",
 	"statsmodels",
 	"seaborn",

@@ -1,16 +1,18 @@
 import os
-from typing import Tuple
 from functools import partial
+from typing import Tuple
+
 import pandas as pd
 
-
-DEPMAP_API_URL = "https://depmap.org/portal/api/download/files"
-DEPMAP_RELEASE_DEFAULT = "DepMap Public 22Q4"
-DEMETER2_RELEASE_DEFAULT = "DEMETER2 Data v6"
-CNV_FILENAME = "OmicsCNGene.csv"
-CRISPR_DEPENDENCY_EFFECT_FILENAME = "CRISPRGeneEffect.csv"
-RNAI_DEPENDENCY_EFFECT_FILENAME = "D2_combined_gene_dep_scores.csv"
-MUTATION_FILENAME = "OmicsSomaticMutations.csv"
+from proxbias.depmap.constants import (
+    CNV_FILENAME,
+    CRISPR_DEPENDENCY_EFFECT_FILENAME,
+    DEMETER2_RELEASE_DEFAULT,
+    DEPMAP_API_URL,
+    DEPMAP_RELEASE_DEFAULT,
+    MUTATION_FILENAME,
+    RNAI_DEPENDENCY_EFFECT_FILENAME,
+)
 
 
 def _download_file(_release_files: pd.DataFrame, _filename: str, **read_kwargs):
@@ -38,7 +40,8 @@ def get_depmap_data(
     depmap_release : str, optional
         a depmap release string, by default DEPMAP_RELEASE_DEFAULT
     rnai_release : str, optional
-        a rnai release string, by default DEMETER2_RELEASE_DEFAULT
+        a rnai release string, by default DEMETER2_RELEASE_DEFAULT. If an empty string,
+        do not check cache and return an empty dataframe
     cache : bool, optional
         whether cache the data as csv or not, by default True
     cache_base_dir : str, optional
@@ -67,7 +70,7 @@ def get_depmap_data(
             target_data = pd.read_csv(target_file, **read_kwargs)
             print("Done!")
         else:
-            print(f"Cache is not found. Downloading {filename} from {release_name}...")
+            print(f"Cached file {filename} is not found. Downloading from {release_name}...")
             target_data = _download_file(release_files, filename, **read_kwargs)
             print("Done!")
             if cache:
@@ -101,16 +104,19 @@ def get_depmap_data(
     crispr_effect_data.index = [g.split(" ")[0] for g in crispr_effect_data.index]
 
     # RNAi Dependency Effect
-    rnai_effect_data = _read_cache_rnai(RNAI_DEPENDENCY_EFFECT_FILENAME, index_col=0)
-    rnai_effect_data.columns.name = "ModelID"
-    rnai_effect_data.index = [g.split(" ")[0] for g in rnai_effect_data.index]
-    # remove multi-mapping oligos
-    rnai_effect_data = rnai_effect_data.query("~index.str.contains('&')")
-    # some genes are not available for a majority of cell models.
-    # most are deprecated or low confidence genes. remove them.
-    n_missed_models = rnai_effect_data.isna().sum(axis=1)
-    rnai_models = n_missed_models[n_missed_models < 200].index
-    rnai_effect_data = rnai_effect_data.loc[rnai_models].dropna(axis=1)
+    if rnai_release:
+        rnai_effect_data = _read_cache_rnai(RNAI_DEPENDENCY_EFFECT_FILENAME, index_col=0)
+        rnai_effect_data.columns.name = "ModelID"
+        rnai_effect_data.index = [g.split(" ")[0] for g in rnai_effect_data.index]
+        # remove multi-mapping oligos
+        rnai_effect_data = rnai_effect_data.query("~index.str.contains('&')")
+        # some genes are not available for a majority of cell models.
+        # most are deprecated or low confidence genes. remove them.
+        n_missed_models = rnai_effect_data.isna().sum(axis=1)
+        rnai_models = n_missed_models[n_missed_models < 200].index
+        rnai_effect_data = rnai_effect_data.loc[rnai_models].dropna(axis=1)
+    else:
+        rnai_effect_data = pd.DataFrame()
 
     # Copy Number Variation
     cnv_data = _read_cache_depmap(CNV_FILENAME, index_col=0)

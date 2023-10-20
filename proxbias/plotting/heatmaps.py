@@ -126,7 +126,7 @@ def plot_heatmap(
             plt.plot([x + 0.5, x + 0.5], [ym, yM], color="k", ls="-", lw=lw)
             plt.plot([xm, xM], [x + 0.5, x + 0.5], color="k", ls="-", lw=lw)
     if show_cent_lines:
-        for x in cent_pos_p.values:
+        for x in cent_pos_p.values:  # type: ignore
             plt.plot([x + 0.5, x + 0.5], [ym, yM], color="k", ls=":", lw=lw)
             plt.plot([xm, xM], [x + 0.5, x + 0.5], color="k", ls=":", lw=lw)
 

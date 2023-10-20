@@ -84,22 +84,9 @@ ipython_config.py
 # pyenv
 .python-version
 
-# pipenv
-#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
-#   However, in case of collaboration, if having platform-specific dependencies or dependencies
-#   having no cross-platform support, pipenv may install dependencies that don't work, or not
-#   install all needed dependencies.
-#Pipfile.lock
-
 # PEP 582; used by e.g. github.com/David-OConnor/pyflow
 __pypackages__/
 
-# Celery stuff
-celerybeat-schedule
-celerybeat.pid
-
-# SageMath parsed files
-*.sage.py
 
 # Environments
 .env
@@ -125,9 +112,6 @@ venv.bak/
 .dmypy.json
 dmypy.json
 
-# Pyre type checker
-.pyre/
-
 # VS Code
 settings.json
 
@@ -137,3 +121,12 @@ settings.json
 # Scratch work
 scratch/
 proxbias/notebooks/plots/
+
+
+# Determined.ai
+.detignore
+notebook_config.yaml
+startup-hook.sh
+
+# Depmap
+depmap/*
