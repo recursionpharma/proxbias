@@ -690,7 +690,7 @@ torchmetrics==1.2.0
     #   scvi-tools
 tox==4.11.3
     # via proxbias (pyproject.toml)
-tqdm==4.63.1
+tqdm==4.66.1
     # via
     #   docstr-coverage
     #   infercnvpy
