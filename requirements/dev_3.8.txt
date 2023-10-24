@@ -63,7 +63,6 @@ chex==0.1.7
 click==8.1.7
     # via
     #   black
-    #   docstr-coverage
     #   pip-tools
 colorama==0.4.6
     # via
@@ -91,8 +90,6 @@ dm-tree==0.1.8
     # via chex
 docrep==0.3.2
     # via scvi-tools
-docstr-coverage==2.3.0
-    # via proxbias (pyproject.toml)
 efaar-benchmarking==0.1.0
     # via proxbias (pyproject.toml)
 et-xmlfile==1.1.0
@@ -478,7 +475,6 @@ pywavelets==1.4.1
 pyyaml==6.0.1
     # via
     #   bandit
-    #   docstr-coverage
     #   flax
     #   ml-collections
     #   orbax-checkpoint
@@ -611,7 +607,6 @@ tox==4.11.3
     # via proxbias (pyproject.toml)
 tqdm==4.66.1
     # via
-    #   docstr-coverage
     #   infercnvpy
     #   numpyro
     #   proxbias (pyproject.toml)

@@ -45,7 +45,6 @@ dev = [
 	"bandit",
 	"black",
 	"coverage",
-	"docstr-coverage",
 	"flake8",
 	"mypy",
 	"pip-tools",
