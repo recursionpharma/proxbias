@@ -9,14 +9,17 @@ from efaar_benchmarking.utils import (
     get_benchmark_data,
     get_feats_w_indices,
 )
-from numba import njit
+from numba import jit
 from numba.typed import List as NumbaList
 from scipy.stats import combine_pvalues, spearmanr
 from sklearn.metrics.pairwise import cosine_similarity as sk_cossim
 from sklearn.utils import Bunch
 from statsmodels.stats.nonparametric import rank_compare_2indep
 
-from proxbias.utils.chromosome_info import get_chromosome_info_as_dfs, get_chromosome_info_as_dicts
+from proxbias.utils.chromosome_info import (
+    get_chromosome_info_as_dfs,
+    get_chromosome_info_as_dicts,
+)
 from proxbias.utils.constants import ARMS_ORD
 from proxbias.utils.cosine_similarity import cosine_similarity
 
@@ -80,7 +83,7 @@ def _prep_data(
     return cossims, gene_to_arm, typed_gene_codes_by_arm
 
 
-@njit(fastmath=True)
+@jit(fastmath=True)  # type: ignore[attr-defined]
 def _get_intra_samples(
     cossims: np.ndarray,
     i_indices: np.ndarray,
@@ -116,7 +119,7 @@ def _get_intra_samples(
     return samples.reshape(original_shape)
 
 
-@njit(fastmath=True)
+@jit(fastmath=True)  # type: ignore[attr-defined]
 def _get_inter_samples(
     cossims: np.ndarray,
     i_indices: np.ndarray,
