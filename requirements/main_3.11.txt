@@ -4,9 +4,9 @@ absl-py==2.0.0
     #   ml-collections
     #   optax
     #   orbax-checkpoint
-aiobotocore==2.5.2
+aiobotocore==2.7.0
     # via s3fs
-aiohttp==3.8.4
+aiohttp==3.8.6
     # via
     #   aiobotocore
     #   fsspec
@@ -16,7 +16,7 @@ aioitertools==0.11.0
     # via aiobotocore
 aiosignal==1.3.1
     # via aiohttp
-anndata==0.9.1
+anndata==0.10.2
     # via
     #   infercnvpy
     #   mudata
@@ -30,11 +30,13 @@ anyio==3.7.1
     #   starlette
 appnope==0.1.3
     # via ipython
+array-api-compat==1.4
+    # via anndata
 arrow==1.3.0
     # via lightning
-asttokens==2.2.1
+asttokens==2.4.0
     # via stack-data
-async-timeout==4.0.2
+async-timeout==4.0.3
     # via aiohttp
 attrs==23.1.0
     # via aiohttp
@@ -46,18 +48,18 @@ beautifulsoup4==4.12.2
     # via lightning
 blessed==1.20.0
     # via inquirer
-boto3==1.26.161
+boto3==1.28.64
     # via lightning-cloud
-botocore==1.29.161
+botocore==1.31.64
     # via
     #   aiobotocore
     #   boto3
     #   s3transfer
-cachetools==5.3.1
+cachetools==5.3.2
     # via google-auth
 certifi==2023.7.22
     # via requests
-charset-normalizer==3.2.0
+charset-normalizer==3.3.1
     # via
     #   aiohttp
     #   requests
@@ -72,13 +74,13 @@ click==8.1.7
     #   uvicorn
 contextlib2==21.6.0
     # via ml-collections
-contourpy==1.1.0
+contourpy==1.1.1
     # via matplotlib
-cramjam==2.6.2
+cramjam==2.7.0
     # via fastparquet
 croniter==1.4.1
     # via lightning
-cycler==0.11.0
+cycler==0.12.1
     # via matplotlib
 dateutils==0.6.12
     # via lightning
@@ -96,25 +98,25 @@ efaar-benchmarking==0.1.0
     # via proxbias (pyproject.toml)
 etils[epath,epy]==1.5.2
     # via orbax-checkpoint
-executing==1.2.0
+executing==2.0.0
     # via stack-data
 fastapi==0.104.0
     # via
     #   lightning
     #   lightning-cloud
-fastparquet==2023.7.0
+fastparquet==2023.8.0
     # via proxbias (pyproject.toml)
 filelock==3.12.4
     # via torch
 flax==0.7.4
     # via scvi-tools
-fonttools==4.41.0
+fonttools==4.43.1
     # via matplotlib
 frozenlist==1.4.0
     # via
     #   aiohttp
     #   aiosignal
-fsspec[http]==2023.6.0
+fsspec[http]==2023.10.0
     # via
     #   efaar-benchmarking
     #   etils
@@ -124,7 +126,7 @@ fsspec[http]==2023.6.0
     #   pytorch-lightning
     #   s3fs
     #   torch
-gcsfs==2023.6.0
+gcsfs==2023.10.0
     # via efaar-benchmarking
 google-api-core==2.12.0
     # via
@@ -151,11 +153,11 @@ google-resumable-media==2.6.0
     # via google-cloud-storage
 googleapis-common-protos==1.61.0
     # via google-api-core
-gtfparse==2.0.1
+gtfparse==1.3.0
     # via infercnvpy
 h11==0.14.0
     # via uvicorn
-h5py==3.9.0
+h5py==3.10.0
     # via
     #   anndata
     #   mudata
@@ -166,17 +168,17 @@ idna==3.4
     #   anyio
     #   requests
     #   yarl
-igraph==0.10.6
+igraph==0.10.8
     # via leidenalg
-imageio==2.31.1
+imageio==2.31.6
     # via scikit-image
 importlib-resources==6.1.0
     # via etils
-infercnvpy==0.4.2
+infercnvpy==0.4.3
     # via proxbias (pyproject.toml)
 inquirer==3.1.3
     # via lightning
-ipython==8.14.0
+ipython==8.16.1
     # via infercnvpy
 itsdangerous==2.1.2
     # via starsessions
@@ -195,7 +197,7 @@ jaxlib==0.4.19
     #   optax
     #   orbax-checkpoint
     #   scvi-tools
-jedi==0.18.2
+jedi==0.19.1
     # via ipython
 jinja2==3.1.2
     # via
@@ -205,16 +207,16 @@ jmespath==1.0.1
     # via
     #   boto3
     #   botocore
-joblib==1.3.1
+joblib==1.3.2
     # via
     #   pynndescent
     #   scanpy
     #   scikit-learn
-kiwisolver==1.4.4
+kiwisolver==1.4.5
     # via matplotlib
 lazy-loader==0.3
     # via scikit-image
-leidenalg==0.10.0
+leidenalg==0.10.1
     # via infercnvpy
 lightning==2.0.9.post0
     # via scvi-tools
@@ -225,7 +227,7 @@ lightning-utilities==0.9.0
     #   lightning
     #   pytorch-lightning
     #   torchmetrics
-llvmlite==0.40.1
+llvmlite==0.41.1
     # via
     #   numba
     #   pynndescent
@@ -233,7 +235,7 @@ markdown-it-py==3.0.0
     # via rich
 markupsafe==2.1.3
     # via jinja2
-matplotlib==3.7.2
+matplotlib==3.8.0
     # via
     #   efaar-benchmarking
     #   scanpy
@@ -269,24 +271,25 @@ natsort==8.4.0
     #   scanpy
 nest-asyncio==1.5.8
     # via orbax-checkpoint
-networkx==3.1
+networkx==3.2
     # via
     #   scanpy
     #   scikit-image
     #   torch
-numba==0.57.1
+numba==0.58.1
     # via
     #   pynndescent
     #   scanpy
     #   sparse
     #   umap-learn
-numpy==1.24.4
+numpy==1.26.1
     # via
     #   anndata
     #   chex
     #   contourpy
     #   fastparquet
     #   flax
+    #   gtfparse
     #   h5py
     #   imageio
     #   infercnvpy
@@ -307,7 +310,6 @@ numpy==1.24.4
     #   pyarrow
     #   pyro-ppl
     #   pytorch-lightning
-    #   pywavelets
     #   scanpy
     #   scikit-image
     #   scikit-learn
@@ -337,7 +339,7 @@ orbax-checkpoint==0.4.1
     # via flax
 ordered-set==4.1.0
     # via deepdiff
-packaging==23.1
+packaging==23.2
     # via
     #   anndata
     #   fastparquet
@@ -349,11 +351,12 @@ packaging==23.1
     #   scikit-image
     #   statsmodels
     #   xarray
-pandas==2.0.3
+pandas==2.1.1
     # via
     #   anndata
     #   efaar-benchmarking
     #   fastparquet
+    #   gtfparse
     #   infercnvpy
     #   mudata
     #   proxbias (pyproject.toml)
@@ -373,13 +376,11 @@ pexpect==4.8.0
     # via ipython
 pickleshare==0.7.5
     # via ipython
-pillow==10.0.0
+pillow==10.0.1
     # via
     #   imageio
     #   matplotlib
     #   scikit-image
-polars==0.18.7
-    # via gtfparse
 prompt-toolkit==3.0.39
     # via ipython
 protobuf==4.24.4
@@ -393,7 +394,7 @@ ptyprocess==0.7.0
     # via pexpect
 pure-eval==0.2.2
     # via stack-data
-pyarrow==12.0.1
+pyarrow==13.0.0
     # via
     #   efaar-benchmarking
     #   proxbias (pyproject.toml)
@@ -409,7 +410,7 @@ pydantic==2.1.1
     #   lightning
 pydantic-core==2.4.0
     # via pydantic
-pygments==2.15.1
+pygments==2.16.1
     # via
     #   ipython
     #   rich
@@ -417,9 +418,9 @@ pyjwt==2.8.0
     # via lightning-cloud
 pynndescent==0.5.10
     # via umap-learn
-pyparsing==3.0.9
+pyparsing==3.1.1
     # via matplotlib
-pyreadr==0.4.7
+pyreadr==0.5.0
     # via infercnvpy
 pyro-api==0.1.2
     # via pyro-ppl
@@ -443,12 +444,10 @@ pytoml==0.1.21
     # via infercnvpy
 pytorch-lightning==2.1.0
     # via lightning
-pytz==2023.3
+pytz==2023.3.post1
     # via
     #   dateutils
     #   pandas
-pywavelets==1.4.1
-    # via scikit-image
 pyyaml==6.0.1
     # via
     #   flax
@@ -477,22 +476,22 @@ rich==13.6.0
     #   scvi-tools
 rsa==4.9
     # via google-auth
-s3fs==2023.6.0
+s3fs==2023.10.0
     # via
     #   efaar-benchmarking
     #   proxbias (pyproject.toml)
-s3transfer==0.6.2
+s3transfer==0.7.0
     # via boto3
-scanpy==1.9.3
+scanpy==1.9.5
     # via
     #   efaar-benchmarking
     #   infercnvpy
     #   proxbias (pyproject.toml)
-scikit-image==0.21.0
+scikit-image==0.22.0
     # via
     #   efaar-benchmarking
     #   proxbias (pyproject.toml)
-scikit-learn==1.3.0
+scikit-learn==1.3.2
     # via
     #   efaar-benchmarking
     #   proxbias (pyproject.toml)
@@ -500,7 +499,7 @@ scikit-learn==1.3.0
     #   scanpy
     #   scvi-tools
     #   umap-learn
-scipy==1.11.1
+scipy==1.11.3
     # via
     #   anndata
     #   jax
@@ -516,7 +515,7 @@ scipy==1.11.1
     #   umap-learn
 scvi-tools==1.0.4
     # via efaar-benchmarking
-seaborn==0.12.2
+seaborn==0.13.0
     # via
     #   efaar-benchmarking
     #   proxbias (pyproject.toml)
@@ -540,7 +539,7 @@ soupsieve==2.5
     # via beautifulsoup4
 sparse==0.14.0
     # via scvi-tools
-stack-data==0.6.2
+stack-data==0.6.3
     # via ipython
 starlette==0.27.0
     # via
@@ -557,15 +556,17 @@ stdlib-list==0.9.0
     # via session-info
 sympy==1.12
     # via torch
+tbb==2021.10.0
+    # via umap-learn
 tensorstore==0.1.46
     # via
     #   flax
     #   orbax-checkpoint
-texttable==1.6.7
+texttable==1.7.0
     # via igraph
-threadpoolctl==3.1.0
+threadpoolctl==3.2.0
     # via scikit-learn
-tifffile==2023.7.10
+tifffile==2023.9.26
     # via scikit-image
 toolz==0.12.0
     # via chex
@@ -581,7 +582,7 @@ torchmetrics==1.2.0
     #   lightning
     #   pytorch-lightning
     #   scvi-tools
-tqdm==4.65.0
+tqdm==4.66.1
     # via
     #   infercnvpy
     #   lightning
@@ -592,7 +593,7 @@ tqdm==4.65.0
     #   scanpy
     #   scvi-tools
     #   umap-learn
-traitlets==5.9.0
+traitlets==5.11.2
     # via
     #   ipython
     #   lightning
@@ -614,9 +615,9 @@ typing-extensions==4.8.0
     #   torch
 tzdata==2023.3
     # via pandas
-umap-learn==0.5.3
+umap-learn==0.5.4
     # via scanpy
-urllib3==1.26.16
+urllib3==2.0.7
     # via
     #   botocore
     #   lightning
@@ -626,7 +627,7 @@ uvicorn==0.23.2
     # via
     #   lightning
     #   lightning-cloud
-wcwidth==0.2.6
+wcwidth==0.2.8
     # via
     #   blessed
     #   prompt-toolkit
