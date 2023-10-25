@@ -1,9 +1,10 @@
-from typing import Tuple, Optional
 from functools import partial
-import pandas as pd
+from typing import Optional, Tuple
+
 import matplotlib as mpl
-import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
+import pandas as pd
 import seaborn as sns
 
 
@@ -77,7 +78,7 @@ def plot_stat_arm_bars(
             bar_ax.legend(handles=[patch1, patch2, patch3, patch4], loc=(1.01, 0.3))
         for tick in bar_ax.xaxis.get_major_ticks()[1::2]:
             tick.set_pad(25)
-        fig.set_size_inches(figsize)
+        fig.set_size_inches(figsize)  # type: ignore[arg-type]
         fig.set_facecolor("white")
         if f_name is not None:
             plt.savefig(f_name, dpi=600, format=fmt, bbox_inches="tight")
@@ -144,5 +145,5 @@ def plot_bm_bar_pairs(
     plt.subplots_adjust(hspace=0.4)
     plt.gcf().set_facecolor("white")
     ax.set_facecolor("white")
-    fig.set_size_inches(figsize)
+    fig.set_size_inches(figsize)  # type: ignore[arg-type]
     plt.savefig(f_name, format=fmt, bbox_inches="tight")

@@ -1,10 +1,9 @@
-import numpy as np
-import pandas as pd
 from typing import Optional
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-
+import numpy as np
+import pandas as pd
 from skimage.measure import block_reduce
 
 
@@ -82,7 +81,7 @@ def plot_heatmap(
 
     image_data = cmap(color_norm(sims.values))
 
-    plt.figure(figsize=figsize)
+    plt.figure(figsize=figsize)  # type: ignore[arg-type]
     plt.imshow(image_data)
     if show_cbar:
         plt.colorbar(mpl.cm.ScalarMappable(norm=color_norm, cmap=cmap), shrink=0.5)
@@ -156,8 +155,8 @@ def plot_heatmap(
             ax.text(cent_mids[cent], label_locy, cent, ha="left", rotation=lab_rot, size=lab_s)
             # Labels on the right
             ax.text(sims.shape[0] + 0.001 * s, cent_mids[cent], cent, ha="left", size=lab_s)
-
-    plt.title(title, size="xx-large", y=1.1)
+    if title:
+        plt.title(title, size="xx-large", y=1.1)
     plt.gcf().set_facecolor("white")
     if f_name is not None:
         plt.savefig(f_name, dpi=600, format=format, bbox_inches="tight")
