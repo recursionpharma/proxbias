@@ -43,7 +43,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
 	"bandit",
-	"black",
+	"black[jupyter]",
 	"coverage",
 	"flake8",
 	"mypy",

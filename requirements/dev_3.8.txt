@@ -34,7 +34,7 @@ backcall==0.2.0
     # via ipython
 bandit==1.7.5
     # via proxbias (pyproject.toml)
-black==23.10.1
+black[jupyter]==23.10.1
     # via proxbias (pyproject.toml)
 botocore==1.31.64
     # via aiobotocore
@@ -190,7 +190,9 @@ infercnvpy==0.4.2
 iniconfig==2.0.0
     # via pytest
 ipython==8.13.0
-    # via infercnvpy
+    # via
+    #   black
+    #   infercnvpy
 jax==0.4.13
     # via
     #   chex
@@ -578,7 +580,9 @@ threadpoolctl==3.2.0
 tifffile==2023.7.10
     # via scikit-image
 tokenize-rt==5.2.0
-    # via pyupgrade
+    # via
+    #   black
+    #   pyupgrade
 tomli==2.0.1
     # via
     #   black
