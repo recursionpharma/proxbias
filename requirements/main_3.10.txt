@@ -178,7 +178,9 @@ igraph==0.10.8
 imageio==2.31.6
     # via scikit-image
 importlib-resources==6.1.0
-    # via etils
+    # via
+    #   etils
+    #   proxbias (pyproject.toml)
 infercnvpy==0.4.3
     # via proxbias (pyproject.toml)
 inquirer==3.1.3

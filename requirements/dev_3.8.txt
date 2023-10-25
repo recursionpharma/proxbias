@@ -185,6 +185,7 @@ importlib-resources==6.1.0
     # via
     #   matplotlib
     #   orbax-checkpoint
+    #   proxbias (pyproject.toml)
 infercnvpy==0.4.2
     # via proxbias (pyproject.toml)
 iniconfig==2.0.0

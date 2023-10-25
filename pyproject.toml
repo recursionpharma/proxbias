@@ -23,21 +23,22 @@ requires-python = ">=3.8"
 dynamic = ["version"]
 
 dependencies = [
+	"efaar-benchmarking >= 0.1.0",
+	"fastparquet",
+	"importlib_resources",
+	"infercnvpy",
 	"numpy",
 	"pandas",
-	"s3fs",
-	"scipy",
-	"scikit-learn",
-	"statsmodels",
-	"seaborn",
-	"scikit-image",
 	"pyarrow",
-	"fastparquet",
+	"s3fs",
 	"scanpy",
-	"infercnvpy",
-	"wget",
-	"efaar-benchmarking >= 0.1.0",
+	"scikit-image",
+	"scikit-learn",
+	"scipy",
+	"seaborn",
+	"statsmodels",
 	"tqdm",
+	"wget",
 ]
 
 [project.optional-dependencies]

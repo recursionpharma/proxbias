@@ -183,6 +183,7 @@ importlib-resources==6.1.0
     # via
     #   etils
     #   matplotlib
+    #   proxbias (pyproject.toml)
 infercnvpy==0.4.3
     # via proxbias (pyproject.toml)
 inquirer==3.1.3
