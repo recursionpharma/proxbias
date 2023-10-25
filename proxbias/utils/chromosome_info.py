@@ -1,4 +1,8 @@
-import functools
+try:
+    from functools import cache
+except ImportError:
+    from functools import lru_cache as cache
+
 from typing import Any, Dict, Optional, Tuple
 
 import pandas as pd
@@ -91,7 +95,7 @@ def _load_genes(chromosomes: Optional[pd.DataFrame] = None) -> pd.DataFrame:
     return genes
 
 
-@functools.cache  # type: ignore[attr-defined]
+@cache  # type: ignore[attr-defined]
 def get_chromosome_info_as_dfs() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     Get structured information about the chromosomes that genes lie on as three dataframes:
@@ -113,7 +117,7 @@ def get_chromosome_info_as_dfs() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFra
     return genes, chroms, bands
 
 
-@functools.cache  # type: ignore[attr-defined]
+@cache  # type: ignore[attr-defined]
 def get_chromosome_info_as_dicts(
     legacy_bands: bool = False,
 ) -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any]]:

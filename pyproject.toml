@@ -10,7 +10,7 @@ universal = "true"
 [project]
 name = "proxbias"
 authors = [
-    {name = "Recursion Pharmaceuticals", email = "devs@recursionpharma.com"},
+	{ name = "Recursion Pharmaceuticals", email = "devs@recursionpharma.com" },
 ]
 readme = "README.md"
 classifiers = [
@@ -18,37 +18,35 @@ classifiers = [
 	"Programming Language :: Python",
 	"Programming Language :: Python :: 3",
 ]
-keywords=["proxbias"]
+keywords = ["proxbias"]
 requires-python = ">=3.8"
-dynamic = [
-	"version"
-]
+dynamic = ["version"]
 
 dependencies = [
+	"efaar-benchmarking >= 0.1.0",
+	"fastparquet",
+	"importlib_resources",
+	"infercnvpy",
 	"numpy",
 	"pandas",
+	"pyarrow",
 	"s3fs",
-	"scipy",
+	"s3fs",
+	"scanpy",
 	"scikit-image",
 	"scikit-learn",
-	"statsmodels",
+	"scipy",
 	"seaborn",
-	"scikit-image",
-	"pyarrow",
-	"fastparquet",
-	"scanpy",
-	"infercnvpy",
-	"wget",
-	"efaar-benchmarking",
+	"statsmodels",
 	"tqdm",
+	"wget",
 ]
 
 [project.optional-dependencies]
 dev = [
 	"bandit",
-	"black",
+	"black[jupyter]",
 	"coverage",
-	"docstr-coverage",
 	"flake8",
 	"mypy",
 	"pip-tools",
@@ -64,18 +62,20 @@ dev = [
 
 [tool.pytest.ini_options]
 addopts = [
-	"--ignore", "setup.py",
-	"--ignore", "run_test.py",
-	"--tb", "native",
+	"--ignore",
+	"setup.py",
+	"--ignore",
+	"run_test.py",
+	"--tb",
+	"native",
 	"--strict-markers",
 	"--durations=20",
-	"--cov-report", "term-missing",
+	"--cov-report",
+	"term-missing",
 	"--cov=proxbias",
 ]
 testpaths = ["tests"]
-env = [
-	"PYTHONHASHSEED=0",
-]
+env = ["PYTHONHASHSEED=0"]
 
 [tool.mypy]
 files = "proxbias"

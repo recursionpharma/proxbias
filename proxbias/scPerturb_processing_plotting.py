@@ -1,20 +1,22 @@
-import os
 import itertools
-import wget
+import os
+from ast import literal_eval
 from re import findall
-import scanpy
+from typing import List, Optional
+
+import infercnvpy
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from proxbias import utils
-import infercnvpy
+import scanpy
+import seaborn as sns
+import wget
 from scanpy import AnnData
 from scipy.stats import zscore
-from typing import List, Optional
-from ast import literal_eval
-import matplotlib.pyplot as plt
-import seaborn as sns
 from skimage.measure import block_reduce
 from tqdm.auto import tqdm
+
+from proxbias import utils
 
 
 def _compute_chromosomal_loss(
@@ -621,7 +623,7 @@ def plot_loss_for_selected_genes(
             other_seps.append(len(other_cell_inds) if len(other_seps) == 0 else len(other_cell_inds) + other_seps[-1])
 
         crunch = _get_crunch_size(filename_short)
-        plt.figure(figsize=[20, int(loss_seps[-1] / 15)])
+        plt.figure(figsize=[20, int(loss_seps[-1] / 15)])  # type: ignore[arg-type]
         tmp = block_reduce(loss_arrs, (1, crunch), np.mean)
         ax = sns.heatmap(
             tmp, cmap="seismic", center=0, cbar_kws=dict(use_gridspec=False, location="top", shrink=0.5, pad=0.01)
