@@ -136,7 +136,7 @@ fastapi==0.104.0
     #   lightning-cloud
 fastjsonschema==2.18.1
     # via validate-pyproject
-fastparquet==2023.8.0
+fastparquet==2023.10.0
     # via proxbias (pyproject.toml)
 filelock==3.12.4
     # via
@@ -225,10 +225,13 @@ iniconfig==2.0.0
     # via pytest
 inquirer==3.1.3
     # via lightning
-ipython==8.16.1
+ipython==8.16.1 ; python_version > "3.8"
     # via
     #   black
     #   infercnvpy
+    #   proxbias (pyproject.toml)
+isort==5.12.0
+    # via proxbias (pyproject.toml)
 itsdangerous==2.1.2
     # via starsessions
 jax==0.4.19
@@ -269,7 +272,7 @@ leidenalg==0.10.1
     # via infercnvpy
 lightning==2.0.9.post0
     # via scvi-tools
-lightning-cloud==0.5.43
+lightning-cloud==0.5.44
     # via lightning
 lightning-utilities==0.9.0
     # via
@@ -518,7 +521,7 @@ pyro-api==0.1.2
     # via pyro-ppl
 pyro-ppl==1.8.6
     # via scvi-tools
-pytest==7.4.2
+pytest==7.4.3
     # via
     #   proxbias (pyproject.toml)
     #   pytest-cov
@@ -721,7 +724,7 @@ tqdm==4.66.1
     #   scanpy
     #   scvi-tools
     #   umap-learn
-traitlets==5.11.2
+traitlets==5.12.0
     # via
     #   ipython
     #   lightning

@@ -72,7 +72,7 @@ etils==1.3.0
     # via orbax-checkpoint
 executing==2.0.0
     # via stack-data
-fastparquet==2023.8.0
+fastparquet==2023.10.0
     # via proxbias (pyproject.toml)
 filelock==3.12.4
     # via torch
@@ -146,7 +146,7 @@ importlib-resources==6.1.0
     #   proxbias (pyproject.toml)
 infercnvpy==0.4.2
     # via proxbias (pyproject.toml)
-ipython==8.13.0
+ipython==8.12.3
     # via infercnvpy
 jax==0.4.13
     # via
@@ -495,7 +495,7 @@ tqdm==4.66.1
     #   scanpy
     #   scvi-tools
     #   umap-learn
-traitlets==5.11.2
+traitlets==5.12.0
     # via
     #   ipython
     #   matplotlib-inline

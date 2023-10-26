@@ -104,7 +104,7 @@ fastapi==0.104.0
     # via
     #   lightning
     #   lightning-cloud
-fastparquet==2023.8.0
+fastparquet==2023.10.0
     # via proxbias (pyproject.toml)
 filelock==3.12.4
     # via torch
@@ -222,7 +222,7 @@ leidenalg==0.10.1
     # via infercnvpy
 lightning==2.0.9.post0
     # via scvi-tools
-lightning-cloud==0.5.43
+lightning-cloud==0.5.44
     # via lightning
 lightning-utilities==0.9.0
     # via
@@ -595,7 +595,7 @@ tqdm==4.66.1
     #   scanpy
     #   scvi-tools
     #   umap-learn
-traitlets==5.11.2
+traitlets==5.12.0
     # via
     #   ipython
     #   lightning

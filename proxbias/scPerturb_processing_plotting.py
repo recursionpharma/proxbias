@@ -421,7 +421,7 @@ def generate_specific_loss_and_summary_tables(
         "# targets w/ loss towards telomere",
         "# targets w/ loss towards centromere",
     ]
-    summaryres_df.columns = gr_cols + add_cols
+    summaryres_df.columns = gr_cols + add_cols  # type: ignore
     summaryres_df["Total # tested targets"] = summaryres_df["Dataset"].apply(lambda x: tested_gene_count_dict[x])
     summaryres_df["% targets w/ specific loss"] = summaryres_df.apply(
         lambda r: round((r["# targets w/ specific loss"] / r["Total # tested targets"]) * 100, 1), axis=1
