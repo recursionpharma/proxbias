@@ -21,6 +21,30 @@ def split_models(
     complete_only: bool = False,
     filter_amp: bool = False,
 ) -> Tuple[Set[str], Set[str], Set[str], Set[str]]:
+    """
+    Split models (cell lines) into 4 groups:
+    - lof: models with a loss of function mutation for the gene of interest
+    - wt_low_change: models with no mutation and normal number
+    - amp: models with a copy number gain
+    - mutant_low_change: models with a mutation and normal number
+
+    Inputs:
+    -------
+    - gene_symbol: gene of interest
+    - candidate_models: list of models to consider
+    - cnv_data: copy number data from depmap
+    - mutation_data: data on which models have which mutations on a per gene basis
+    - cutoffs: tuple of cutoffs for copy number gain and loss
+    - complete_only: whether to only consider models with a complete loss of function mutation
+    - filter_amp: whether to remove models with a complete loss of function mutation from the amp group
+
+    Returns:
+    --------
+    - lof: set of models with a loss of function mutation
+    - wt_low_change: set of models with no mutation and normal number
+    - amp: set of models with a copy number gain
+    - mutant_low_change: set of models with a mutation and normal number
+    """
     cnv_subset = pd.Series((np.power(2, cnv_data.loc[gene_symbol]) - 1) * 2)
     all_cnv = cnv_subset.loc[cnv_subset.index.intersection(candidate_models)]
     lof = set(candidate_models).intersection(all_cnv.loc[all_cnv < cutoffs[0]].index.unique())
@@ -51,7 +75,7 @@ def split_models(
     return lof, wt_low_change, amp, mutant_low_change
 
 
-def _bootstrap_gene(
+def _compute_stats_for_gene(
     gene_of_interest: str,
     dep_data: pd.DataFrame,
     cnv_data: pd.DataFrame,
@@ -60,7 +84,7 @@ def _bootstrap_gene(
     model_sample_rate: float,
     search_mode: str,
     n_min_cell_lines: int,
-    n_bootstrap: int,
+    n_iterations: int,
     seed: int,
     cnv_cutoffs: Tuple[float, float],
     eval_function: Callable,
@@ -97,7 +121,7 @@ def _bootstrap_gene(
         choose_n = int(available_samples * model_sample_rate)
     test_stats = []
     wt_stats = []
-    for _ in range(n_bootstrap):
+    for _ in range(n_iterations):
         wt_deps = list(rng.choice(wt_columns, size=choose_n, replace=False))
         test_deps = list(rng.choice(test_columns, size=choose_n, replace=False))
         wt_df = dep_data.loc[:, wt_deps].copy()
@@ -117,13 +141,13 @@ def _bootstrap_gene(
         "wt_mean": np.array(wt_stats).mean(),
         "diff": diff,
         "search_mode": search_mode,
-        "n_sample_bootstrap": choose_n,
+        "n_models": choose_n,
         "n_test": len(test_columns),
         "n_wt": len(wt_columns),
     }
 
 
-def bootstrap_stats(
+def compute_monte_carlo_stats(
     genes_of_interest: List[str],
     dependency_data: pd.DataFrame,
     cnv_data: pd.DataFrame,
@@ -132,7 +156,7 @@ def bootstrap_stats(
     model_sample_rate: float = 0.8,
     search_mode: str = "lof",
     n_min_cell_lines: int = 25,
-    n_bootstrap: int = 100,
+    n_iterations: int = 100,
     seed: int = 42,
     center_genes: bool = True,
     cnv_cutoffs: Tuple[float, float] = (CN_LOSS_CUTOFF, CN_GAIN_CUTOFF),
@@ -145,15 +169,34 @@ def bootstrap_stats(
     fixed_cell_line_sampling: bool = False,
 ) -> pd.DataFrame:
     """
-    gene of interest
-    dependency data
-    cnv data
-    mutation data
-    search mode. lof=loss of function, amp=amplification
-    min number of samples to start bootstraping, otherwise return empty dict
-    number of bootstrap steps
-    evaluation function
-    evaluation function keyword arguments
+    Compute proximity bias scores for a list of genes of interest using a monte carlo approach
+
+    Inputs:
+    -------
+    - genes_of_interest: list of genes to compute metrics over
+    - dependency_data: dependency data from depmap
+    - cnv_data: copy number data from depmap
+    - mutation_data: data on which models have which mutations on a per gene basis
+    - candidate_models: list of models to consider
+    - model_sample_rate: fraction of models to sample for each sample
+    - search_mode: whether to search for models with a loss of function mutation
+        and decreased copy number (lof) or a copy number gain (amp)
+    - n_min_cell_lines: minimum number of cell lines to use for each sample
+    - n_iterations: number of iterations to perform
+    - seed: random seed
+    - center_genes: whether to center gene effects
+    - cnv_cutoffs: tuple of cutoffs for copy number gain and loss
+    - eval_function: function to use for evaluating proximity bias
+    - eval_kwargs: keyword arguments to pass to `eval_function`
+    - complete_lof: whether to only consider models with a complete loss of function mutation for the lof group
+    - filter_amp: whether to remove models with a complete loss of function mutation from the amp group
+    - verbose: whether to print progress
+    - n_workers: number of workers to use for multiprocessing
+    - fixed_cell_line_sampling: whether to sample the same number of cell lines for each iteration
+
+    Returns:
+    --------
+    - df: dataframe with results
     """
     dep_data = dependency_data.loc[:, dependency_data.columns.intersection(candidate_models)].copy()  # type: ignore
     genes_of_interest_index = pd.Index(genes_of_interest, dtype=object)  # type: ignore
@@ -175,7 +218,7 @@ def bootstrap_stats(
     with cf.ProcessPoolExecutor(n_workers, mp_context=mp.get_context("spawn")) as executor:
         for gene_of_interest in available_genes:
             fut = executor.submit(
-                _bootstrap_gene,
+                _compute_stats_for_gene,
                 gene_of_interest=gene_of_interest,
                 candidate_models=candidate_models,
                 dep_data=dep_data,
@@ -188,7 +231,7 @@ def bootstrap_stats(
                 search_mode=search_mode,
                 model_sample_rate=model_sample_rate,
                 n_min_cell_lines=n_min_cell_lines,
-                n_bootstrap=n_bootstrap,
+                n_iterations=n_iterations,
                 seed=seed,
                 eval_function=eval_function,
                 eval_kwargs=eval_kwargs,
