@@ -146,7 +146,7 @@ importlib-resources==6.1.0
     #   proxbias (pyproject.toml)
 infercnvpy==0.4.2
     # via proxbias (pyproject.toml)
-ipython==8.13.0
+ipython==8.12.3
     # via infercnvpy
 jax==0.4.13
     # via
