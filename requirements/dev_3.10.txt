@@ -225,10 +225,13 @@ iniconfig==2.0.0
     # via pytest
 inquirer==3.1.3
     # via lightning
-ipython==8.16.1
+ipython==8.16.1 ; python_version > "3.8"
     # via
     #   black
     #   infercnvpy
+    #   proxbias (pyproject.toml)
+isort==5.12.0
+    # via proxbias (pyproject.toml)
 itsdangerous==2.1.2
     # via starsessions
 jax==0.4.19
