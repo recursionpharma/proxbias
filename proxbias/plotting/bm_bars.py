@@ -131,12 +131,12 @@ def plot_bm_bar_pairs(
         barplot = sns.barplot(data=df, x=x, y=y, hue=hue, palette=pal, ax=ax)
         barplot.axhline(0.5, linestyle="--", color="grey")
 
-        plt.draw() # This somehow makes the labels accessible 
+        plt.draw()  # This somehow makes the labels accessible
         locs = ax.get_xticks()
         labels = [label.get_text().replace("chr", "") for label in barplot.get_xticklabels()]
         barplot.set_xticks(locs)
         barplot.set_xticklabels(labels, rotation=0)
-        
+
         for tick in barplot.xaxis.get_major_ticks()[1::2]:
             tick.set_pad(25)
         barplot.set_xlabel("")
