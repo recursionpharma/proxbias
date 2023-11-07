@@ -18,8 +18,9 @@ Notebooks to reproduce plots from public datasets are included in the `notebooks
 - `cpg0016_loading.ipynb` - Load the JUMP CP data, apply PCA and proximity bias correction and save data locally.
 - `cpg0016_plots.ipynb` - Create whole-genome plots from cpg0016, calculate Brunner-Munzel statistics and make bar plots.
 - `shinyDepMap_benchmark.ipynb` - Load DepMap 19Q3 data and create plots showing an enrichment for within-chromosome arm relationships.
+- `DepMap_PB_Driver_Scan_sample.ipynb` - Short sample code for executing the DepMap driver scanning.
 - `DepMap_PB_Drivers.ipynb` - Use DepMap 22Q4 data to look at differential proximity bias when TP53 and other genes are wild-type vs loss/gain of function.
-- `DepMap_22q4_vs_23q2.ipynb` - Generate whole-genome plots and Brunner-Munzel probability plots for DepMap 22Q4 and 23Q2 data.
+- `DepMap_version_comparisons.ipynb` - Generate whole-genome plots and Brunner-Munzel probability plots for DepMap 19Q3, 22Q4 and 23Q2 data.
 - `scPerturb_tables_heatmaps.ipynb` - Load scRNASeq datasets from scPerturb, run infercnv, compute chromosomal loss, generate result tables, and plot infercnv heatmaps for cells with specific loss.
 
 # TODO:

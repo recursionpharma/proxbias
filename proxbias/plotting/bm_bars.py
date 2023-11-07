@@ -130,20 +130,26 @@ def plot_bm_bar_pairs(
         pal = [palette[i * 2], palette[i * 2 + 1]]
         barplot = sns.barplot(data=df, x=x, y=y, hue=hue, palette=pal, ax=ax)
         barplot.axhline(0.5, linestyle="--", color="grey")
-        barplot.set_xticklabels([xtl.get_text().replace("chr", "") for xtl in barplot.get_xticklabels()])
-        barplot.set_xticklabels(barplot.get_xticklabels(), rotation=0)
+
+        plt.draw()  # This somehow makes the labels accessible
+        locs = ax.get_xticks()
+        labels = [label.get_text().replace("chr", "") for label in barplot.get_xticklabels()]
+        barplot.set_xticks(locs)
+        barplot.set_xticklabels(labels, rotation=0)
+
         for tick in barplot.xaxis.get_major_ticks()[1::2]:
-            tick.set_pad(30)
+            tick.set_pad(25)
         barplot.set_xlabel("")
         patch1 = mpatches.Patch(color=pal[0], label=lab1)
         patch2 = mpatches.Patch(color=pal[1], label=lab2)
         line1 = mpl.lines.Line2D([0], [0], color="grey", lw=3, label="intra ≈ inter", linestyle="--")
         barplot.legend(handles=[patch1, patch2, line1], loc=legend_loc, fontsize=15)
         ax.set_ylim((0.4, 1))
-        ax.tick_params(axis="both", which="major", labelsize=20)
+        ax.tick_params(axis="both", which="major", labelsize=18)
         ax.set_ylabel(ax.get_ylabel(), fontsize=20)
     plt.subplots_adjust(hspace=0.4)
     plt.gcf().set_facecolor("white")
     ax.set_facecolor("white")
     fig.set_size_inches(figsize)  # type: ignore[arg-type]
     plt.savefig(f_name, format=fmt, bbox_inches="tight")
+    plt.show()
