@@ -22,6 +22,3 @@ Notebooks to reproduce plots from public datasets are included in the `notebooks
 - `DepMap_PB_Drivers.ipynb` - Use DepMap 22Q4 data to look at differential proximity bias when TP53 and other genes are wild-type vs loss/gain of function.
 - `DepMap_version_comparisons.ipynb` - Generate whole-genome plots and Brunner-Munzel probability plots for DepMap 19Q3, 22Q4 and 23Q2 data.
 - `scPerturb_tables_heatmaps.ipynb` - Load scRNASeq datasets from scPerturb, run infercnv, compute chromosomal loss, generate result tables, and plot infercnv heatmaps for cells with specific loss.
-
-# TODO:
-- Code to search DepMap for drivers of proximity bias
