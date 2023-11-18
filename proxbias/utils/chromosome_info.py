@@ -1,4 +1,8 @@
-import functools
+try:
+    from functools import cache
+except ImportError:
+    from functools import lru_cache as cache
+
 from typing import Any, Dict, Optional, Tuple
 
 import pandas as pd
@@ -91,7 +95,7 @@ def _load_genes(chromosomes: Optional[pd.DataFrame] = None) -> pd.DataFrame:
     return genes
 
 
-@functools.cache  # type: ignore[attr-defined]
+@cache  # type: ignore[attr-defined]
 def get_chromosome_info_as_dfs() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     Get structured information about the chromosomes that genes lie on as three dataframes:
@@ -113,7 +117,7 @@ def get_chromosome_info_as_dfs() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFra
     return genes, chroms, bands
 
 
-@functools.cache  # type: ignore[attr-defined]
+@cache  # type: ignore[attr-defined]
 def get_chromosome_info_as_dicts(
     legacy_bands: bool = False,
 ) -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
@@ -130,15 +134,16 @@ def get_chromosome_info_as_dicts(
 
     # Extra composite key for convenience
     gene_df["arm"] = gene_df.chrom + gene_df.chrom_arm
-    gene_dict = gene_df.to_dict(orient="index")
+    gene_dict: Dict[str, Any] = gene_df.to_dict(orient="index")  # type: ignore[assignment]
 
-    chrom_dict = chrom_df.to_dict(orient="index")
+    chrom_dict: Dict[str, Any] = chrom_df.to_dict(orient="index")  # type: ignore[assignment]
 
     # Extra composite key for convenience
     band_df["region"] = band_df.chrom + band_df.name
+    band_dict: Dict[str, Any]
     if legacy_bands:
         band_df = band_df[["region", "chrom", "band_start", "band_end"]].set_index("region")
         band_dict = {str(k): tuple(v) for k, v in band_df.iterrows()}
     else:
-        band_dict = band_df.to_dict(orient="index")
+        band_dict = band_df.to_dict(orient="index")  # type: ignore[assignment]
     return gene_dict, chrom_dict, band_dict
