@@ -196,7 +196,7 @@ def _load_and_process_data(filename: str, chromosome_info: Optional[pd.DataFrame
     if not os.path.exists(destination_path):
         source_path = f"https://zenodo.org/record/7416068/files/{filename}.h5ad?download=1"
         wget.download(source_path, destination_path)
-    ad = scanpy.read_h5ad(destination_path)
+    ad = read_and_log_transform_h5ad_file(destination_path)
     ad.var = ad.var.rename(columns={"start": "st", "end": "en"}).join(chromosome_info, how="left")
     if filename.startswith("Adamson"):
         ad.obs["gene"] = ad.obs.perturbation.apply(lambda x: x.split("_")[0]).fillna("")
@@ -529,6 +529,21 @@ def _get_perturbation_type(filename_short: str):
     }[filename_short]
 
 
+def read_and_log_transform_h5ad_file(filename: str) -> AnnData:
+    """
+    Read and log-transform the specified h5ad single-cell perturb-seq file.
+
+    Args:
+        filename (str): The name of the dataset file to read and log-transform.
+
+    Returns:
+        AnnData: The log-transformed dataset as an AnnData object.
+    """
+    ad = scanpy.read_h5ad(filename)
+    scanpy.pp.log1p(ad)
+    return ad
+
+
 def plot_loss_for_selected_genes(
     filenames: List[str],
     chromosome_info: Optional[pd.DataFrame] = None,
@@ -567,7 +582,7 @@ def plot_loss_for_selected_genes(
     sns.set(font_scale=1.7)
     plt.rcParams["svg.fonttype"] = "none"
     for filename in filenames:
-        ad = scanpy.read_h5ad(os.path.join(str(utils.constants.DATA_DIR), f"{filename}.h5ad"))
+        ad = read_and_log_transform_h5ad_file(os.path.join(str(utils.constants.DATA_DIR), f"{filename}.h5ad"))
         filename_short = _get_short_filename(filename)
         perts2check_df = allres[
             (allres["Dataset"] == filename_short)
