@@ -84,7 +84,7 @@ def _compute_chromosomal_loss(
     loss_3p_ko_cell_frac = np.empty(len(loss))
     i5p = 0
     i3p = 0
-    
+
     for aff_gene in tqdm(pert_genes_w_chr_info):
         aff_chr = pert_gene_chr_arm[aff_gene][0]
         # get all genes in the same chromosome with the KO gene, sorted
@@ -101,13 +101,13 @@ def _compute_chromosomal_loss(
         aff_chr_endblocknum = aff_chr_startblocknum + total_chr_blocks
         # get block position of the gene in the genome
         aff_gene_blocknum = aff_chr_startblocknum + aff_gene_blocknum_
-    
+
         block_count_5p = min(int(neigh / blocksize) - 1, aff_gene_blocknum - aff_chr_startblocknum)
         block_count_3p = min(int(neigh / blocksize) - 1, aff_chr_endblocknum - aff_gene_blocknum)
-    
+
         blocks_5p = np.arange(aff_gene_blocknum - block_count_5p, aff_gene_blocknum + 1)
         blocks_3p = np.arange(aff_gene_blocknum, aff_gene_blocknum + block_count_3p + 1)
-    
+
         for t, blocks in {"5p": blocks_5p, "3p": blocks_3p}.items():
             low_frac = np.sum(cnvarr[:, blocks], axis=1) / len(blocks)
             for ko_gene in pert_genes:
@@ -123,7 +123,6 @@ def _compute_chromosomal_loss(
                     loss_3p_ko_cell_count[i3p] = len(cells)
                     loss_3p_ko_cell_frac[i3p] = len(cells) / ko_gene_sum_dict[ko_gene]
                     i3p += 1
-
 
     loss["loss5p_cells"] = loss_5p_cells
     loss["loss3p_cells"] = loss_3p_cells
