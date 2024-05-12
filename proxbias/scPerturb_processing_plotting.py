@@ -70,6 +70,12 @@ def _compute_chromosomal_loss(
         sorted_genes_on_chr[c] = list(avar[avar.chromosome == c].sort_values("start").index)
         start_block_of_chr[c] = anndat.uns["cnv"]["chr_pos"][c]
 
+    sorted_genes_dict = {chr_[0]: sorted_genes_on_chr[chr_[0]] for chr_ in set(pert_gene_chr_arm.values())}
+    block_size_dict = {chr_: len(genes) // blocksize for chr_, genes in sorted_genes_dict.items()}
+
+    ko_gene_ixs_dict = {ko_gene: anndat.obs.gene == ko_gene for ko_gene in pert_genes}
+    ko_gene_sum_dict = {ko_gene: sum(ixs) for ko_gene, ixs in ko_gene_ixs_dict.items()}
+
     loss_5p_cells: List[List[str]] = [[]] * len(loss)
     loss_5p_ko_cell_count = np.empty(len(loss))
     loss_5p_ko_cell_frac = np.empty(len(loss))
@@ -78,44 +84,46 @@ def _compute_chromosomal_loss(
     loss_3p_ko_cell_frac = np.empty(len(loss))
     i5p = 0
     i3p = 0
+    
     for aff_gene in tqdm(pert_genes_w_chr_info):
         aff_chr = pert_gene_chr_arm[aff_gene][0]
         # get all genes in the same chromosome with the KO gene, sorted
-        sorted_genes = sorted_genes_on_chr[aff_chr]
+        sorted_genes = sorted_genes_dict[aff_chr]
         # get position of the gene in the chromosome
         aff_gene_ordpos = sorted_genes.index(aff_gene)
         # get block position of the gene in the chromosome
         aff_gene_blocknum_ = aff_gene_ordpos // blocksize
         # get total number of blocks in the chromosome
-        total_chr_blocks = len(sorted_genes) // blocksize
+        total_chr_blocks = block_size_dict[aff_chr]
         # get start block of the chromosome gene is in
         aff_chr_startblocknum = start_block_of_chr[aff_chr]
         # get end block of the chromosome gene is in
         aff_chr_endblocknum = aff_chr_startblocknum + total_chr_blocks
         # get block position of the gene in the genome
         aff_gene_blocknum = aff_chr_startblocknum + aff_gene_blocknum_
-
+    
         block_count_5p = min(int(neigh / blocksize) - 1, aff_gene_blocknum - aff_chr_startblocknum)
         block_count_3p = min(int(neigh / blocksize) - 1, aff_chr_endblocknum - aff_gene_blocknum)
-
+    
         blocks_5p = np.arange(aff_gene_blocknum - block_count_5p, aff_gene_blocknum + 1)
         blocks_3p = np.arange(aff_gene_blocknum, aff_gene_blocknum + block_count_3p + 1)
-
+    
         for t, blocks in {"5p": blocks_5p, "3p": blocks_3p}.items():
             low_frac = np.sum(cnvarr[:, blocks], axis=1) / len(blocks)
             for ko_gene in pert_genes:
-                ko_gene_ixs = anndat.obs.gene == ko_gene
+                ko_gene_ixs = ko_gene_ixs_dict[ko_gene]
                 cells = list(anndat.obs.index[(low_frac >= frac_cutoff) & ko_gene_ixs])
                 if t == "5p":
                     loss_5p_cells[i5p] = cells
                     loss_5p_ko_cell_count[i5p] = len(cells)
-                    loss_5p_ko_cell_frac[i5p] = len(cells) / sum(ko_gene_ixs)
+                    loss_5p_ko_cell_frac[i5p] = len(cells) / ko_gene_sum_dict[ko_gene]
                     i5p += 1
                 elif t == "3p":
                     loss_3p_cells[i3p] = cells
                     loss_3p_ko_cell_count[i3p] = len(cells)
-                    loss_3p_ko_cell_frac[i3p] = len(cells) / sum(ko_gene_ixs)
+                    loss_3p_ko_cell_frac[i3p] = len(cells) / ko_gene_sum_dict[ko_gene]
                     i3p += 1
+
 
     loss["loss5p_cells"] = loss_5p_cells
     loss["loss3p_cells"] = loss_3p_cells
