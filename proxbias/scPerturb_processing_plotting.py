@@ -70,8 +70,7 @@ def _compute_chromosomal_loss(
         sorted_genes_on_chr[c] = list(avar[avar.chromosome == c].sort_values("start").index)
         start_block_of_chr[c] = anndat.uns["cnv"]["chr_pos"][c]
 
-    sorted_genes_dict = {chr_[0]: sorted_genes_on_chr[chr_[0]] for chr_ in set(pert_gene_chr_arm.values())}
-    block_size_dict = {chr_: len(genes) // blocksize for chr_, genes in sorted_genes_dict.items()}
+    block_size_dict = {chr_: len(genes) // blocksize for chr_, genes in sorted_genes_on_chr.items()}
 
     ko_gene_ixs_dict = {ko_gene: anndat.obs.gene == ko_gene for ko_gene in pert_genes}
     ko_gene_sum_dict = {ko_gene: sum(ixs) for ko_gene, ixs in ko_gene_ixs_dict.items()}
@@ -88,7 +87,7 @@ def _compute_chromosomal_loss(
     for aff_gene in tqdm(pert_genes_w_chr_info):
         aff_chr = pert_gene_chr_arm[aff_gene][0]
         # get all genes in the same chromosome with the KO gene, sorted
-        sorted_genes = sorted_genes_dict[aff_chr]
+        sorted_genes = sorted_genes_on_chr[aff_chr]
         # get position of the gene in the chromosome
         aff_gene_ordpos = sorted_genes.index(aff_gene)
         # get block position of the gene in the chromosome
