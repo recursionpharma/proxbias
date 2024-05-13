@@ -66,11 +66,11 @@ def _compute_chromosomal_loss(
 
     sorted_genes_on_chr = {}
     start_block_of_chr = {}
-    block_size_of_chr = {}
+    end_block_of_chr = {}
     for c in set(map(lambda chr_arm: chr_arm[0], pert_gene_chr_arm.values())):
         sorted_genes_on_chr[c] = list(avar[avar.chromosome == c].sort_values("start").index)
         start_block_of_chr[c] = anndat.uns["cnv"]["chr_pos"][c]
-        block_size_of_chr[c] = len(sorted_genes_on_chr[c]) // blocksize
+        end_block_of_chr[c] = start_block_of_chr[c] + len(sorted_genes_on_chr[c]) // blocksize
 
     ko_gene_ixs_dict = {ko_gene: anndat.obs.gene == ko_gene for ko_gene in pert_genes}
     ko_gene_sum_dict = {ko_gene: sum(ixs) for ko_gene, ixs in ko_gene_ixs_dict.items()}
@@ -92,12 +92,10 @@ def _compute_chromosomal_loss(
         aff_gene_ordpos = sorted_genes.index(aff_gene)
         # get block position of the gene in the chromosome
         aff_gene_blocknum_ = aff_gene_ordpos // blocksize
-        # get total number of blocks in the chromosome
-        total_chr_blocks = block_size_of_chr[aff_chr]
         # get start block of the chromosome gene is in
         aff_chr_startblocknum = start_block_of_chr[aff_chr]
         # get end block of the chromosome gene is in
-        aff_chr_endblocknum = aff_chr_startblocknum + total_chr_blocks
+        aff_chr_endblocknum = end_block_of_chr[aff_chr]
         # get block position of the gene in the genome
         aff_gene_blocknum = aff_chr_startblocknum + aff_gene_blocknum_
 
