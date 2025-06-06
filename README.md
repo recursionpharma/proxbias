@@ -1,3 +1,6 @@
+[![scorecard-score](https://github.com/recursionpharma/octo-guard-badges/blob/trunk/badges/repo/proxbias/maturity_score.svg?raw=true)](https://infosec-docs.prod.rxrx.io/octoguard/scorecards/proxbias)
+[![scorecard-status](https://github.com/recursionpharma/octo-guard-badges/blob/trunk/badges/repo/proxbias/scorecard_status.svg?raw=true)](https://infosec-docs.prod.rxrx.io/octoguard/scorecards/proxbias)
+[![team-status](https://github.com/recursionpharma/octo-guard-badges/blob/trunk/badges/team/proxbias/team_status.svg?raw=true)](https://infosec-docs.prod.rxrx.io/octoguard/team-reports/proxbias)
 # proxbias
 
 Code to support the publication "High-resolution genome-wide mapping of chromosome-arm-scale truncations induced by 
